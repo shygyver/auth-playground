@@ -23,8 +23,8 @@
         "@types/bun": "^1.3.11",
       },
     },
-    "apps/persistent-app": {
-      "name": "persistent-app",
+    "apps/oidc-persistent-app": {
+      "name": "oidc-persistent-app",
       "dependencies": {
         "@hono/standard-validator": "^0.2.2",
         "@saurbit/hono-oauth2": "^0.1.2",
@@ -82,9 +82,9 @@
 
     "oidc-app": ["oidc-app@workspace:apps/oidc-app"],
 
-    "openapi-types": ["openapi-types@12.1.3", "", {}, "sha512-N4YtSYJqghVu4iek2ZUvcN/0aqH1kRDuNqzcycDxhOUpg7GdvLa2F3DgS6yBNhInhv2r/6I0Flkn7CqL8+nIcw=="],
+    "oidc-persistent-app": ["oidc-persistent-app@workspace:apps/oidc-persistent-app"],
 
-    "persistent-app": ["persistent-app@workspace:apps/persistent-app"],
+    "openapi-types": ["openapi-types@12.1.3", "", {}, "sha512-N4YtSYJqghVu4iek2ZUvcN/0aqH1kRDuNqzcycDxhOUpg7GdvLa2F3DgS6yBNhInhv2r/6I0Flkn7CqL8+nIcw=="],
 
     "quansync": ["quansync@0.2.11", "", {}, "sha512-AifT7QEbW9Nri4tAwR5M/uzpBuqfZf+zwaEM/QkzEjj7NBuFD2rBuy0K3dE+8wltbezDV7JMA0WfnCPYRSYbXA=="],
 

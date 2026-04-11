@@ -1,5 +1,5 @@
 {
-  "name": "persistent-app",
+  "name": "oidc-persistent-app",
   "scripts": {
     "build": "bun build ./src/index.ts --outdir ./dist --target bun",
     "check": "bun x tsc --noEmit",
