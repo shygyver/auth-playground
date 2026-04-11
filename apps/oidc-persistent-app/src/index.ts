@@ -6,7 +6,7 @@ import {
 } from "@saurbit/oauth2-jwt";
 import { decrypt, encrypt } from "./encrypter";
 import { base64ToUint8Array, uint8ArrayToBase64 } from "./utils";
-import { getPrivateKeyRecord, PrivateKeyRecord, PublicKeyRecord, saveKeyPairRecord } from "./db";
+import { getPrivateKeyRecord, getPublicKeyRecords, PrivateKeyRecord, PublicKeyRecord, saveKeyPairRecord } from "./db";
 
 /**
  * In a production environment, the master key (KEK) should be stored securely, 
@@ -51,9 +51,11 @@ const jwksStore: JwksKeyStore = {
     await saveKeyPairRecord(privateKeyRecord, publicKeyRecord, expirationTime);
   },
   async getPublicKeys(): Promise<object[]> {
-    // This method should return an array of public keys in JWK format
-    // For simplicity, we will return an empty array here. In a real implementation, you would retrieve the stored keys and return their public parts.
-    return [];
+    const publicKeyRecords = await getPublicKeyRecords();
+    if (!publicKeyRecords) {
+      return [];
+    }
+    return publicKeyRecords.map(record => JSON.parse(record.publicKey));
   },
   async getPrivateKey(): Promise<object | undefined> {
     const privateKeyRecord = await getPrivateKeyRecord();
