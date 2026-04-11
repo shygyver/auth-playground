@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "workspaces": ["apps/*"],
   "devDependencies": {
-    "@types/bun": "^1.3.11"
+    "@types/bun": "^1.3.12"
   },
   "scripts": {
     "build": "bun run build:oidc-app && bun run build:oidc-persistent-app",

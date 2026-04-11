@@ -5,7 +5,7 @@
     "": {
       "name": "auth-playground",
       "devDependencies": {
-        "@types/bun": "^1.3.11",
+        "@types/bun": "^1.3.12",
       },
     },
     "apps/oidc-app": {
@@ -15,12 +15,12 @@
         "@saurbit/hono-oauth2": "^0.1.2",
         "@saurbit/oauth2": "^0.1.1",
         "@saurbit/oauth2-jwt": "0.1.2",
-        "@scalar/hono-api-reference": "^0.10.6",
+        "@scalar/hono-api-reference": "^0.10.7",
         "hono": "^4.12.12",
         "hono-openapi": "^1.3.0",
       },
       "devDependencies": {
-        "@types/bun": "^1.3.11",
+        "@types/bun": "^1.3.12",
       },
     },
     "apps/oidc-persistent-app": {
@@ -30,12 +30,12 @@
         "@saurbit/hono-oauth2": "^0.1.2",
         "@saurbit/oauth2": "^0.1.1",
         "@saurbit/oauth2-jwt": "0.1.2",
-        "@scalar/hono-api-reference": "^0.10.6",
+        "@scalar/hono-api-reference": "^0.10.7",
         "hono": "^4.12.12",
         "hono-openapi": "^1.3.0",
       },
       "devDependencies": {
-        "@types/bun": "^1.3.11",
+        "@types/bun": "^1.3.12",
       },
     },
   },

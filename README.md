@@ -34,3 +34,9 @@ bun run dev:oidc-app
 ```
 
 Replace `oidc-app` with the name of the app you want to run.
+
+---
+
+## License
+
+MIT
