@@ -14,7 +14,7 @@
         "@hono/standard-validator": "^0.2.2",
         "@saurbit/hono-oauth2": "^0.1.2",
         "@saurbit/oauth2": "^0.1.1",
-        "@saurbit/oauth2-jwt": "0.1.2",
+        "@saurbit/oauth2-jwt": "0.1.3",
         "@scalar/hono-api-reference": "^0.10.7",
         "hono": "^4.12.12",
         "hono-openapi": "^1.3.0",
@@ -29,7 +29,7 @@
         "@hono/standard-validator": "^0.2.2",
         "@saurbit/hono-oauth2": "^0.1.2",
         "@saurbit/oauth2": "^0.1.1",
-        "@saurbit/oauth2-jwt": "0.1.2",
+        "@saurbit/oauth2-jwt": "0.1.3",
         "@scalar/hono-api-reference": "^0.10.7",
         "hono": "^4.12.12",
         "hono-openapi": "^1.3.0",
@@ -48,7 +48,7 @@
 
     "@saurbit/oauth2": ["@saurbit/oauth2@0.1.1", "", {}, "sha512-LRvcCKu3KQ3jcRQ57FpSgRuoOAiKYTM5wfKSiWMclKB/oyXYQmTgZS3Ufc+MKSl4HYBDqoGlh3DgRH8XAIzD3A=="],
 
-    "@saurbit/oauth2-jwt": ["@saurbit/oauth2-jwt@0.1.2", "", { "dependencies": { "jose": "^6.2.2" }, "peerDependencies": { "@saurbit/oauth2": "^0.1.1" } }, "sha512-8vEDCoacCByYEkA2K8fTcJE1MzY1jPuSrq4hS/w5pLlhQp4Jlh6iqBk74kZTaGf/YF35eOpN7w6RxQ//U1YCtA=="],
+    "@saurbit/oauth2-jwt": ["@saurbit/oauth2-jwt@0.1.3", "", { "dependencies": { "jose": "^6.2.2" }, "peerDependencies": { "@saurbit/oauth2": "^0.1.1" } }, "sha512-FkjTwRkvZ2lj4gp/ssIzHn8x/ttglyYt4Wqb6iLPJrSISTcmh7LNYSCewwteuG//xIfXmt4q7Jct/9MQmYNlxg=="],
 
     "@scalar/client-side-rendering": ["@scalar/client-side-rendering@0.1.0", "", { "dependencies": { "@scalar/types": "0.8.0" } }, "sha512-SUuLgDmY1mUYOrGB2vpKj2HnYmPibKOewIV0gugv6k/qajE9R88uIj6u0DxAJVOLgihvKdMGyeXsnUs4fTLZYg=="],
 

@@ -10,6 +10,6 @@ await jwksAuthority.generateKeyPair()
 
 const jwksRotator = new JwksRotator({
   keyGenerator:jwksAuthority,
-  rotatorKeyStore: rotationTimestampStore,
+  rotationTimestampStore: rotationTimestampStore,
   rotationIntervalMs: 7.884e9, // 91 days
 });
