@@ -31,7 +31,7 @@ export interface PublicKeyRecord {
  * @param publicKey The public key record.
  * @param expirationTime The expiration time in milliseconds since the Unix epoch.
  */
-export async function saveKeyPair(privateKey: PrivateKeyRecord, publicKey: PublicKeyRecord, expirationTime: number) {
+export async function saveKeyPairRecord(privateKey: PrivateKeyRecord, publicKey: PublicKeyRecord, expirationTime: number) {
   const client = await pool.connect();
   try {
     await client.query("BEGIN");

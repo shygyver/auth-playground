@@ -1,10 +1,12 @@
 import {
   JoseJwksAuthority,
-  JwksKeyStore
+  JwksKeyStore,
+  JwksRotationTimestampStore,
+  JwksRotator
 } from "@saurbit/oauth2-jwt";
-import { encrypt } from "./encrypter";
+import { decrypt, encrypt } from "./encrypter";
 import { base64ToUint8Array, uint8ArrayToBase64 } from "./utils";
-import { saveKeyPair } from "./db";
+import { getPrivateKeyRecord, PrivateKeyRecord, PublicKeyRecord, saveKeyPairRecord } from "./db";
 
 /**
  * In a production environment, the master key (KEK) should be stored securely, 
@@ -32,20 +34,21 @@ const jwksStore: JwksKeyStore = {
     const encryptedPrivateKey = await encrypt(JSON.stringify(privateKey), dekRaw);
 
     // 3. Wrap (Encrypt) the DEK using the Master Key (KEK)
-    const wrappedDek = await encrypt(JSON.stringify(dekRaw), MASTER_KEY_RAW);
+    const wrappedDek = await encrypt(uint8ArrayToBase64(dekRaw), MASTER_KEY_RAW);
 
     // 4. Store the encrypted private key and the wrapped DEK together
     const expirationTime = Date.now() + ttl * 1000; // Calculate expiration time in milliseconds
-    const privateObject = {
+    const privateKeyRecord: PrivateKeyRecord = {
       keyId: kid,
       privateKey: uint8ArrayToBase64(encryptedPrivateKey),
       wrappedDek: uint8ArrayToBase64(wrappedDek)
     };
-    const publicObject = {
+    const publicKeyRecord: PublicKeyRecord = {
       keyId: kid,
       publicKey: JSON.stringify(publicKey)
     };
-    await saveKeyPair(privateObject, publicObject, expirationTime);
+
+    await saveKeyPairRecord(privateKeyRecord, publicKeyRecord, expirationTime);
   },
   async getPublicKeys(): Promise<object[]> {
     // This method should return an array of public keys in JWK format
@@ -53,12 +56,42 @@ const jwksStore: JwksKeyStore = {
     return [];
   },
   async getPrivateKey(): Promise<object | undefined> {
-    // This method should retrieve the encrypted private key and wrapped DEK for the given kid, unwrap the DEK, decrypt the private key, and return it as an object.
-    // For simplicity, we will return undefined here. In a real implementation, you would look up the storage for the given kid, perform the decryption steps, and return the private key.
-    return undefined;
+    const privateKeyRecord = await getPrivateKeyRecord();
+    if (!privateKeyRecord) {
+      return undefined; // No valid private key found
+    }
+
+    // 1. Unwrap (Decrypt) the DEK using the Master Key (KEK)
+    const wrappedDekBytes = base64ToUint8Array(privateKeyRecord.wrappedDek);
+    const dekRawString = await decrypt(wrappedDekBytes, MASTER_KEY_RAW);
+    const dekRaw = base64ToUint8Array(dekRawString);
+
+    // 2. Decrypt the Private Key using the DEK
+    const decryptedPrivateKeyString = await decrypt(base64ToUint8Array(privateKeyRecord.privateKey), dekRaw);
+
+    return JSON.parse(decryptedPrivateKeyString);
   }
+}
+
+const rotatorKeyStore: JwksRotationTimestampStore = {
+  async getLastRotationTimestamp(): Promise<number> {
+    // Implement logic to retrieve the last rotation timestamp from your storage (e.g., database, file, etc.)
+    // For demonstration, we return a fixed timestamp. In production, this should be dynamic.
+    return Date.now() - 9 * 24 * 60 * 60 * 1000; // Simulate last rotation was 9 days ago
+  },
+  async setLastRotationTimestamp(timestamp: number): Promise<void> {
+    // Implement logic to save the last rotation timestamp to your storage (e.g., database, file, etc.) for future reference.
+    // For demonstration, we simply log it. In production, this should persist the timestamp.
+    console.log("Setting last rotation timestamp to:", new Date(timestamp).toISOString());
+  } 
 }
 
 const jwksAuthority = new JoseJwksAuthority(jwksStore, 8.64e6); // 100-day key lifetime
 
-jwksAuthority.generateKeyPair()
+await jwksAuthority.generateKeyPair()
+
+const jwksRotator = new JwksRotator({
+  keyGenerator:jwksAuthority,
+  rotatorKeyStore: rotatorKeyStore,
+  rotationIntervalMs: 7.884e9, // 91 days
+});

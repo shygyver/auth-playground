@@ -1,4 +1,4 @@
-export async function encrypt(plaintext: string, rawKey: BufferSource) {
+export async function encrypt(plaintext: string, rawKey: BufferSource): Promise<Uint8Array> {
 	const encoder = new TextEncoder();
 	const data = encoder.encode(plaintext);
 
@@ -23,7 +23,7 @@ export async function encrypt(plaintext: string, rawKey: BufferSource) {
 	return combined;
 }
 
-export async function decrypt(combinedData: Uint8Array, rawKey: BufferSource) {
+export async function decrypt(combinedData: Uint8Array, rawKey: BufferSource): Promise<string> {
 	// Split the IV (first 12 bytes) and the ciphertext
 	const iv = combinedData.slice(0, 12);
 	const ciphertext = combinedData.slice(12);
