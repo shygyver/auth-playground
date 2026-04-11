@@ -1,2 +1,2 @@
-# auth-monorepo-playground
+# auth-playground
 A playground monorepo featuring various authorization server implementations.
