@@ -8,6 +8,7 @@ A playground monorepo featuring various authorization server implementations.
 ```
 /apps
   /oidc-app
+  /oidc-persistent-app
 ```
 
 ---
@@ -33,7 +34,7 @@ bun install
 bun run dev:oidc-app
 ```
 
-Replace `oidc-app` with the name of the app you want to run.
+Replace `oidc-app` with the name of the app you want to run (e.g., `oidc-persistent-app`).
 
 ---
 
