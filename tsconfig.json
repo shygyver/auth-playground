@@ -6,6 +6,6 @@
     "allowImportingTsExtensions": true, 
     "noEmit": true,
     "strict": true,
-    "types": ["bun"]
+    "skipLibCheck": true
   }
 }
