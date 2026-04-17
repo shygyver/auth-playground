@@ -8,7 +8,7 @@ A playground monorepo featuring various authorization server implementations.
 - Multiple **apps** in one monorepo
 - Written in **TypeScript** with project references
 - Managed with **bun**
-- Shared tsconfig
+- Shared utilities and configs (e.g. prettier, tsconfig)
 
 ---
 
