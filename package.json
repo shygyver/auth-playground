@@ -9,10 +9,13 @@
     "build": "bun run build:oidc-app && bun run build:oidc-persistent-app",
     "build:oidc-app": "bun run --filter oidc-app build",
     "build:oidc-persistent-app": "bun run --filter oidc-persistent-app build",
-    "check": "bun run check:oidc-app && bun run check:oidc-persistent-app",
+    "build:oidc-consent-app": "bun run --filter oidc-consent-app build",
+    "check": "bun run check:oidc-app && bun run check:oidc-persistent-app && bun run check:oidc-consent-app",
     "check:oidc-app": "cd apps/oidc-app && bun run check",
     "check:oidc-persistent-app": "cd apps/oidc-persistent-app && bun run check",
+    "check:oidc-consent-app": "cd apps/oidc-consent-app && bun run check",
     "dev:oidc-app": "cd apps/oidc-app && bun run dev",
-    "dev:oidc-persistent-app": "cd apps/oidc-persistent-app && bun run dev"
+    "dev:oidc-persistent-app": "cd apps/oidc-persistent-app && bun run dev",
+    "dev:oidc-consent-app": "cd apps/oidc-consent-app && bun run dev"
   }
 }

@@ -1,5 +1,5 @@
 {
-  "name": "oidc-app",
+  "name": "oidc-consent-app",
   "scripts": {
     "build": "bun build ./src/index.ts --outdir ./dist --target bun",
     "check": "bun x tsc --noEmit",

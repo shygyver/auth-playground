@@ -13,7 +13,22 @@
       "dependencies": {
         "@hono/standard-validator": "^0.2.2",
         "@saurbit/hono-oauth2": "^0.1.2",
-        "@saurbit/oauth2": "^0.1.1",
+        "@saurbit/oauth2": "0.1.2",
+        "@saurbit/oauth2-jwt": "0.1.3",
+        "@scalar/hono-api-reference": "^0.10.7",
+        "hono": "^4.12.12",
+        "hono-openapi": "^1.3.0",
+      },
+      "devDependencies": {
+        "@types/bun": "^1.3.12",
+      },
+    },
+    "apps/oidc-consent-app": {
+      "name": "oidc-consent-app",
+      "dependencies": {
+        "@hono/standard-validator": "^0.2.2",
+        "@saurbit/hono-oauth2": "^0.1.2",
+        "@saurbit/oauth2": "0.1.2",
         "@saurbit/oauth2-jwt": "0.1.3",
         "@scalar/hono-api-reference": "^0.10.7",
         "hono": "^4.12.12",
@@ -28,7 +43,7 @@
       "dependencies": {
         "@hono/standard-validator": "^0.2.2",
         "@saurbit/hono-oauth2": "^0.1.2",
-        "@saurbit/oauth2": "^0.1.1",
+        "@saurbit/oauth2": "0.1.2",
         "@saurbit/oauth2-jwt": "0.1.3",
         "@scalar/hono-api-reference": "^0.10.7",
         "hono": "^4.12.12",
@@ -46,7 +61,7 @@
 
     "@saurbit/hono-oauth2": ["@saurbit/hono-oauth2@0.1.2", "", { "dependencies": { "hono": "^4.12.9" }, "peerDependencies": { "@saurbit/oauth2": "^0.1.0" } }, "sha512-qqt7Gya9Uw/xjqSHa8cujbYCEFZhrRtVSTz9kaiHerCp4CwVLEHorAgW/x95cyDpoNjEkRLchHn85CjReACJ6Q=="],
 
-    "@saurbit/oauth2": ["@saurbit/oauth2@0.1.1", "", {}, "sha512-LRvcCKu3KQ3jcRQ57FpSgRuoOAiKYTM5wfKSiWMclKB/oyXYQmTgZS3Ufc+MKSl4HYBDqoGlh3DgRH8XAIzD3A=="],
+    "@saurbit/oauth2": ["@saurbit/oauth2@0.1.2", "", {}, "sha512-epkMxNhcrOiuaMddQEWugj0oJVJUrf6h1MxKSmANrkp0CT68Sma5NVenWTlTKpsnF1KGvRG8z0MZCoLwrtc9mw=="],
 
     "@saurbit/oauth2-jwt": ["@saurbit/oauth2-jwt@0.1.3", "", { "dependencies": { "jose": "^6.2.2" }, "peerDependencies": { "@saurbit/oauth2": "^0.1.1" } }, "sha512-FkjTwRkvZ2lj4gp/ssIzHn8x/ttglyYt4Wqb6iLPJrSISTcmh7LNYSCewwteuG//xIfXmt4q7Jct/9MQmYNlxg=="],
 
@@ -85,6 +100,8 @@
     "nanoid": ["nanoid@5.1.7", "", { "bin": { "nanoid": "bin/nanoid.js" } }, "sha512-ua3NDgISf6jdwezAheMOk4mbE1LXjm1DfMUDMuJf4AqxLFK3ccGpgWizwa5YV7Yz9EpXwEaWoRXSb/BnV0t5dQ=="],
 
     "oidc-app": ["oidc-app@workspace:apps/oidc-app"],
+
+    "oidc-consent-app": ["oidc-consent-app@workspace:apps/oidc-consent-app"],
 
     "oidc-persistent-app": ["oidc-persistent-app@workspace:apps/oidc-persistent-app"],
 
