@@ -1,20 +1,4 @@
-import { Env, Hono } from "hono";
-import { deleteCookie, getCookie, setCookie } from 'hono/cookie'
-import { cors } from "hono/cors";
-import { html } from "hono/html";
-import { HTTPException } from "hono/http-exception";
-
-import { describeRoute, openAPIRouteHandler } from "hono-openapi";
-import { Scalar } from "@scalar/hono-api-reference";
-
 import { HonoOIDCAuthorizationCodeFlowBuilder } from "@saurbit/hono-oauth2";
-
-import {
-  createInMemoryKeyStore,
-  JoseJwksAuthority,
-  JwksRotator,
-} from "@saurbit/oauth2-jwt";
-
 import {
   AccessDeniedError,
   AuthorizationCodeReqData,
@@ -23,6 +7,14 @@ import {
   UnauthorizedClientError,
   UnsupportedGrantTypeError,
 } from "@saurbit/oauth2";
+import { createInMemoryKeyStore, JoseJwksAuthority, JwksRotator } from "@saurbit/oauth2-jwt";
+import { Scalar } from "@scalar/hono-api-reference";
+import { Env, Hono } from "hono";
+import { describeRoute, openAPIRouteHandler } from "hono-openapi";
+import { deleteCookie, getCookie, setCookie } from "hono/cookie";
+import { cors } from "hono/cors";
+import { html } from "hono/html";
+import { HTTPException } from "hono/http-exception";
 
 declare module "@saurbit/oauth2" {
   interface UserCredentials {
@@ -70,9 +62,7 @@ const CLIENT = {
   id: "example-client",
   secret: "example-secret",
   grants: ["authorization_code"],
-  redirectUris: [
-    "http://localhost:3000/scalar",
-  ],
+  redirectUris: ["http://localhost:3000/scalar"],
   scopes: ["openid", "profile", "email", "content:read", "content:write"],
 };
 
@@ -106,22 +96,20 @@ const sessionStorage: Record<
   }
 > = {};
 
-// changed: enhanced the flow builder with generic type parameter for parsed data, 
-// and implemented parsing of form data and session cookie at the authorization endpoint to support user authentication, 
-// consent handling, and session management in a more realistic way. 
+// changed: enhanced the flow builder with generic type parameter for parsed data,
+// and implemented parsing of form data and session cookie at the authorization endpoint to support user authentication,
+// consent handling, and session management in a more realistic way.
 // The generateAuthorizationCode function now also checks the user's consent status before issuing an authorization code.
 const flow = HonoOIDCAuthorizationCodeFlowBuilder.create<Env, ParsedData>({
   // changed: parse form data from the authorization endpoint to extract username, password, consent, and session cookie
   parseAuthorizationEndpointData: async (c) => {
-    let formData: FormData | undefined = undefined
+    let formData: FormData | undefined = undefined;
     if (c.req.method === "POST") {
       try {
         formData = await c.req.formData();
       } catch (error) {
         console.error("Error parsing form data:", {
-          error: error instanceof Error
-            ? { name: error.name, message: error.message }
-            : error,
+          error: error instanceof Error ? { name: error.name, message: error.message } : error,
         });
       }
     }
@@ -129,13 +117,13 @@ const flow = HonoOIDCAuthorizationCodeFlowBuilder.create<Env, ParsedData>({
     const password = formData?.get("password");
     const consent = formData?.get("consent");
 
-    const sessionCookie = getCookie(c, 'session');
+    const sessionCookie = getCookie(c, "session");
 
     return {
       username: typeof username === "string" ? username : undefined,
       password: typeof password === "string" ? password : undefined,
       consent: consent === "allow" || consent === "deny" ? consent : undefined,
-      sessionCookie
+      sessionCookie,
     };
   },
 })
@@ -157,16 +145,10 @@ const flow = HonoOIDCAuthorizationCodeFlowBuilder.create<Env, ParsedData>({
   .noneAuthenticationMethod()
   .setAccessTokenLifetime(3600)
   .setOpenIdConfiguration({
-    claims_supported: [
-      "sub", "aud", "iss", "exp", "iat", "nbf",
-      "name", "email", "username",
-    ],
+    claims_supported: ["sub", "aud", "iss", "exp", "iat", "nbf", "name", "email", "username"],
   })
   .getClientForAuthentication((data) => {
-    if (
-      data.clientId === CLIENT.id &&
-      CLIENT.redirectUris.includes(data.redirectUri)
-    ) {
+    if (data.clientId === CLIENT.id && CLIENT.redirectUris.includes(data.redirectUri)) {
       return {
         id: CLIENT.id,
         grants: CLIENT.grants,
@@ -216,7 +198,7 @@ const flow = HonoOIDCAuthorizationCodeFlowBuilder.create<Env, ParsedData>({
       return {
         type: "deny",
         message: "The user has denied consent for this application.",
-      }
+      };
     }
 
     if (user.consentStatus === "allow") {
@@ -233,8 +215,8 @@ const flow = HonoOIDCAuthorizationCodeFlowBuilder.create<Env, ParsedData>({
     }
 
     return {
-      type: "continue"
-    }
+      type: "continue",
+    };
   })
   .getClient(async (tokenRequest) => {
     if (
@@ -342,9 +324,7 @@ const flow = HonoOIDCAuthorizationCodeFlowBuilder.create<Env, ParsedData>({
       }
     } catch (error) {
       console.error("Token verification error:", {
-        error: error instanceof Error
-          ? { name: error.name, message: error.message }
-          : error,
+        error: error instanceof Error ? { name: error.name, message: error.message } : error,
       });
     }
     return { isValid: false };
@@ -375,10 +355,10 @@ app.get(flow.getJwksEndpoint(), async (c) => {
   return c.json(await jwksAuthority.getJwksEndpointResponse());
 });
 
-// changed: handle GET requests to the authorization endpoint, checking for existing session 
+// changed: handle GET requests to the authorization endpoint, checking for existing session
 // and rendering consent page or login form accordingly
 app.get(flow.getAuthorizationEndpoint(), async (c) => {
-  if (getCookie(c, 'session')) {
+  if (getCookie(c, "session")) {
     const processedAuthorization = await flow.hono().processAuthorization(c);
     // Render consent page if we have a valid session
     if (processedAuthorization.type === "continue") {
@@ -386,17 +366,15 @@ app.get(flow.getAuthorizationEndpoint(), async (c) => {
         HtmlConsentContent({
           app: processedAuthorization.continueResponse.context.client.id,
           userFullName: processedAuthorization.continueResponse.user.fullName,
-          scope: processedAuthorization.continueResponse.scope
-        }),
+          scope: processedAuthorization.continueResponse.scope,
+        })
       );
     }
 
     // If the session is invalid, clear the session cookie and show the login form
     if (processedAuthorization.type === "unauthenticated") {
       deleteCookie(c, "session", { path: "/" });
-      return c.html(
-        HtmlFormContent({ usernameField: "username", passwordField: "password" }),
-      );
+      return c.html(HtmlFormContent({ usernameField: "username", passwordField: "password" }));
     }
 
     // For any other errors, show the error message
@@ -406,14 +384,12 @@ app.get(flow.getAuthorizationEndpoint(), async (c) => {
   }
   const result = await flow.hono().initiateAuthorization(c);
   if (result.success) {
-    return c.html(
-      HtmlFormContent({ usernameField: "username", passwordField: "password" }),
-    );
+    return c.html(HtmlFormContent({ usernameField: "username", passwordField: "password" }));
   }
   return c.json({ error: "invalid_request" }, 400);
 });
 
-// changed: handle form submission at the authorization endpoint, 
+// changed: handle form submission at the authorization endpoint,
 // processing authentication, consent, and session management
 app.post(flow.getAuthorizationEndpoint(), async (c) => {
   try {
@@ -430,7 +406,9 @@ app.post(flow.getAuthorizationEndpoint(), async (c) => {
             error instanceof AccessDeniedError ? error.message : "Invalid request"
           )}`,
           result.state ? `state=${encodeURIComponent(result.state)}` : null,
-        ].filter(Boolean).join("&");
+        ]
+          .filter(Boolean)
+          .join("&");
         return c.redirect(`${result.redirectUri}?${qs}`);
       }
       return c.html(
@@ -439,19 +417,20 @@ app.post(flow.getAuthorizationEndpoint(), async (c) => {
           passwordField: "password",
           errorMessage: error.message,
         }),
-        400,
+        400
       );
     }
 
     if (result.type === "code") {
-      const { code, context: { state, redirectUri } } =
-        result.authorizationCodeResponse;
+      const {
+        code,
+        context: { state, redirectUri },
+      } = result.authorizationCodeResponse;
       const searchParams = new URLSearchParams();
       searchParams.set("code", code);
       if (state) searchParams.set("state", state);
       return c.redirect(`${redirectUri}?${searchParams.toString()}`);
     }
-
 
     if (result.type === "continue") {
       const sessionId = crypto.randomUUID();
@@ -459,7 +438,7 @@ app.post(flow.getAuthorizationEndpoint(), async (c) => {
         userId: result.continueResponse.user.id,
         expiresAt: Date.now() + 300000, // 5 minutes
       };
-      
+
       setCookie(c, "session", sessionId, {
         path: "/",
         httpOnly: true,
@@ -471,8 +450,8 @@ app.post(flow.getAuthorizationEndpoint(), async (c) => {
         HtmlConsentContent({
           app: result.continueResponse.context.client.id,
           userFullName: result.continueResponse.user.fullName,
-          scope: result.continueResponse.scope
-        }),
+          scope: result.continueResponse.scope,
+        })
       );
     }
 
@@ -483,14 +462,12 @@ app.post(flow.getAuthorizationEndpoint(), async (c) => {
           passwordField: "password",
           errorMessage: result.message || "Authentication failed. Please try again.",
         }),
-        400,
+        400
       );
     }
   } catch (error) {
     console.error("Unexpected error at authorization endpoint:", {
-      error: error instanceof Error
-        ? { name: error.name, message: error.message }
-        : error,
+      error: error instanceof Error ? { name: error.name, message: error.message } : error,
     });
     return c.html(
       HtmlFormContent({
@@ -498,7 +475,7 @@ app.post(flow.getAuthorizationEndpoint(), async (c) => {
         passwordField: "password",
         errorMessage: "An unexpected error occurred. Please try again later.",
       }),
-      500,
+      500
     );
   }
 });
@@ -509,14 +486,8 @@ app.post(flow.getTokenEndpoint(), async (c) => {
     return c.json(result.tokenResponse);
   }
   const error = result.error;
-  if (
-    error instanceof UnsupportedGrantTypeError ||
-    error instanceof UnauthorizedClientError
-  ) {
-    return c.json(
-      { error: error.errorCode, errorDescription: error.message },
-      400,
-    );
+  if (error instanceof UnsupportedGrantTypeError || error instanceof UnauthorizedClientError) {
+    return c.json({ error: error.errorCode, errorDescription: error.message }, 400);
   }
   return c.json({ error: "invalid_request" }, 400);
 });
@@ -554,7 +525,7 @@ app.get(
       name: scope.includes("profile") ? user?.fullName : undefined,
       email: scope.includes("email") ? user?.email : undefined,
     });
-  },
+  }
 );
 
 app.get(
@@ -584,7 +555,7 @@ app.get(
     return c.json({
       message: `Hello, ${user?.fullName}! You have accessed a protected resource.`,
     });
-  },
+  }
 );
 
 app.get(
@@ -596,10 +567,13 @@ app.get(
         securitySchemes: { ...flow.toOpenAPISecurityScheme() },
       },
     },
-  }),
+  })
 );
 
-app.get("/scalar", Scalar({ url: "/openapi.json", theme: "purple", showDeveloperTools: "localhost" }));
+app.get(
+  "/scalar",
+  Scalar({ url: "/openapi.json", theme: "purple", showDeveloperTools: "localhost" })
+);
 
 await jwksRotator.checkAndRotateKeys();
 
@@ -612,56 +586,66 @@ function HtmlFormContent(props: {
   usernameField: string;
   passwordField: string;
 }) {
-  return html`
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>Sign in</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-</head>
-<body>
-  <h1>Sign in</h1>
-  ${props.errorMessage ? html`<p style="color:red">${props.errorMessage}</p>` : ""}
-  <form method="POST">
-    <label for="${props.usernameField}">${props.usernameField}</label>
-    <input id="${props.usernameField}" name="${props.usernameField}" type="text" autocomplete="username" required />
-    <label for="${props.passwordField}">${props.passwordField}</label>
-    <input id="${props.passwordField}" name="${props.passwordField}" type="password" autocomplete="current-password" required />
-    <button type="submit" name="sign_in">Sign in</button>
-  </form>
-</body>
-</html>`;
+  return html` <!DOCTYPE html>
+    <html lang="en">
+      <head>
+        <meta charset="UTF-8" />
+        <title>Sign in</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      </head>
+      <body>
+        <h1>Sign in</h1>
+        ${props.errorMessage ? html`<p style="color:red">${props.errorMessage}</p>` : ""}
+        <form method="POST">
+          <label for="${props.usernameField}">${props.usernameField}</label>
+          <input
+            id="${props.usernameField}"
+            name="${props.usernameField}"
+            type="text"
+            autocomplete="username"
+            required
+          />
+          <label for="${props.passwordField}">${props.passwordField}</label>
+          <input
+            id="${props.passwordField}"
+            name="${props.passwordField}"
+            type="password"
+            autocomplete="current-password"
+            required
+          />
+          <button type="submit" name="sign_in">Sign in</button>
+        </form>
+      </body>
+    </html>`;
 }
 
-function HtmlConsentContent(props: {
-  scope: string[];
-  app: string;
-  userFullName: string;
-}) {
-  return html`
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>Consent</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-</head>
-<body>
-  <h1>Consent</h1>
-  <p>User: <b>${props.userFullName}</b></p>
+function HtmlConsentContent(props: { scope: string[]; app: string; userFullName: string }) {
+  return html` <!DOCTYPE html>
+    <html lang="en">
+      <head>
+        <meta charset="UTF-8" />
+        <title>Consent</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      </head>
+      <body>
+        <h1>Consent</h1>
+        <p>User: <b>${props.userFullName}</b></p>
 
-  <p><b>${props.app}</b> is requesting the following permissions:</p>
-  <form method="POST">
-    ${props.scope ? html`<ul>${props.scope.map(s => html`<li>${s}</li>`)}</ul>` : ""}
-    <button type="submit" name="consent" value="allow">Allow</button>
-    <button type="submit" name="consent" value="deny">Deny</button>
-  </form>
-</body>
-</html>`;
+        <p><b>${props.app}</b> is requesting the following permissions:</p>
+        <form method="POST">
+          ${props.scope
+            ? html`<ul>
+                ${props.scope.map((s) => html`<li>${s}</li>`)}
+              </ul>`
+            : ""}
+          <button type="submit" name="consent" value="allow">Allow</button>
+          <button type="submit" name="consent" value="deny">Deny</button>
+        </form>
+      </body>
+    </html>`;
 }
 
 export default {
   port: 3000,
   fetch: app.fetch,
-}
+};
