@@ -1,0 +1,10 @@
+build
+lib
+dist
+.husky
+coverage
+*.json
+*.yaml
+*.yml
+*.md
+*.lock

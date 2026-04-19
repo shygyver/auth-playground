@@ -1,12 +1,19 @@
 {
   "name": "auth-playground",
   "version": "0.1.0",
-  "workspaces": ["apps/*"],
+  "workspaces": [
+    "apps/*"
+  ],
   "devDependencies": {
-    "@types/bun": "^1.3.12"
+    "@trivago/prettier-plugin-sort-imports": "^6.0.2",
+    "@types/bun": "^1.3.12",
+    "cross-env": "^10.1.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.4.0",
+    "prettier": "3.8.3"
   },
   "scripts": {
-    "build": "bun run build:oidc-app && bun run build:oidc-persistent-app",
+    "build": "bun run build:oidc-app && bun run build:oidc-persistent-app && bun run build:oidc-consent-app",
     "build:oidc-app": "bun run --filter oidc-app build",
     "build:oidc-persistent-app": "bun run --filter oidc-persistent-app build",
     "build:oidc-consent-app": "bun run --filter oidc-consent-app build",
@@ -16,6 +23,8 @@
     "check:oidc-consent-app": "cd apps/oidc-consent-app && bun run check",
     "dev:oidc-app": "cd apps/oidc-app && bun run dev",
     "dev:oidc-persistent-app": "cd apps/oidc-persistent-app && bun run dev",
-    "dev:oidc-consent-app": "cd apps/oidc-consent-app && bun run dev"
+    "dev:oidc-consent-app": "cd apps/oidc-consent-app && bun run dev",
+    "fmt": "cross-env NODE_OPTIONS=--experimental-strip-types prettier --write ./",
+    "fmt:staged": "cross-env NODE_OPTIONS=--experimental-strip-types lint-staged"
   }
 }

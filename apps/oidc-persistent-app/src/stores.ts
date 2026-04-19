@@ -1,20 +1,17 @@
 import {
-  JwksKeyStore,
-  JwksRotationTimestampStore,
-} from "@saurbit/oauth2-jwt";
-import { 
-  getPrivateKeyCreatedAt, 
-  getPrivateKeyRecord, 
-  getPublicKeyRecords, 
-  PrivateKeyRecord, 
-  PublicKeyRecord, 
-  saveKeyPairRecord 
+  getPrivateKeyCreatedAt,
+  getPrivateKeyRecord,
+  getPublicKeyRecords,
+  PrivateKeyRecord,
+  PublicKeyRecord,
+  saveKeyPairRecord,
 } from "./db";
+import { JwksKeyStore, JwksRotationTimestampStore } from "@saurbit/oauth2-jwt";
 
 /**
- * In a production environment, the master key (KEK) should be stored securely, 
- * such as in an environment variable or a secrets manager. 
- * It should never be hardcoded in the source code. 
+ * In a production environment, the master key (KEK) should be stored securely,
+ * such as in an environment variable or a secrets manager.
+ * It should never be hardcoded in the source code.
  * This should be a base64-encoded 32-byte key (256 bits) for AES-256 encryption.
  */
 const ENV_MASTER_KEY = process.env.MASTER_KEY!;
@@ -53,7 +50,7 @@ function base64ToUint8Array(base64: string): Uint8Array<ArrayBuffer> {
 
 /**
  * Encrypts plaintext using AES-GCM with the provided raw key.
- * 
+ *
  * @param plaintext The plaintext string to be encrypted.
  * @param rawKey The raw key (BufferSource) used for encryption.
  * @returns A Uint8Array containing the IV and ciphertext.
@@ -63,17 +60,13 @@ async function encrypt(plaintext: string, rawKey: BufferSource): Promise<Uint8Ar
   const data = encoder.encode(plaintext);
 
   // Import the raw key (32 bytes for AES-256)
-  const key = await crypto.subtle.importKey(
-    "raw", rawKey, { name: "AES-GCM" }, false, ["encrypt"]
-  );
+  const key = await crypto.subtle.importKey("raw", rawKey, { name: "AES-GCM" }, false, ["encrypt"]);
 
   // Generate a random 12-byte IV
   const iv = crypto.getRandomValues(new Uint8Array(12));
 
   // Encrypt the data
-  const ciphertext = await crypto.subtle.encrypt(
-    { name: "AES-GCM", iv: iv }, key, data
-  );
+  const ciphertext = await crypto.subtle.encrypt({ name: "AES-GCM", iv: iv }, key, data);
 
   // Combine IV and ciphertext for storage (IV must be saved to decrypt)
   const combined = new Uint8Array(iv.length + ciphertext.byteLength);
@@ -85,7 +78,7 @@ async function encrypt(plaintext: string, rawKey: BufferSource): Promise<Uint8Ar
 
 /**
  * Decrypts ciphertext using AES-GCM with the provided raw key.
- * 
+ *
  * @param combinedData A Uint8Array containing the IV and ciphertext.
  * @param rawKey The raw key (BufferSource) used for decryption.
  * @returns The decrypted plaintext string.
@@ -95,13 +88,9 @@ async function decrypt(combinedData: Uint8Array, rawKey: BufferSource): Promise<
   const iv = combinedData.slice(0, 12);
   const ciphertext = combinedData.slice(12);
 
-  const key = await crypto.subtle.importKey(
-    "raw", rawKey, { name: "AES-GCM" }, false, ["decrypt"]
-  );
+  const key = await crypto.subtle.importKey("raw", rawKey, { name: "AES-GCM" }, false, ["decrypt"]);
 
-  const decrypted = await crypto.subtle.decrypt(
-    { name: "AES-GCM", iv: iv }, key, ciphertext
-  );
+  const decrypted = await crypto.subtle.decrypt({ name: "AES-GCM", iv: iv }, key, ciphertext);
 
   return new TextDecoder().decode(decrypted);
 }
@@ -127,11 +116,11 @@ export const jwksStore: JwksKeyStore = {
     const privateKeyRecord: PrivateKeyRecord = {
       keyId: kid,
       privateKey: uint8ArrayToBase64(encryptedPrivateKey),
-      wrappedDek: uint8ArrayToBase64(wrappedDek)
+      wrappedDek: uint8ArrayToBase64(wrappedDek),
     };
     const publicKeyRecord: PublicKeyRecord = {
       keyId: kid,
-      publicKey: JSON.stringify(publicKey)
+      publicKey: JSON.stringify(publicKey),
     };
 
     await saveKeyPairRecord(privateKeyRecord, publicKeyRecord, expirationTime);
@@ -141,7 +130,7 @@ export const jwksStore: JwksKeyStore = {
     if (!publicKeyRecords) {
       return [];
     }
-    return publicKeyRecords.map(record => JSON.parse(record.publicKey));
+    return publicKeyRecords.map((record) => JSON.parse(record.publicKey));
   },
   async getPrivateKey(): Promise<object | undefined> {
     const privateKeyRecord = await getPrivateKeyRecord();
@@ -155,11 +144,14 @@ export const jwksStore: JwksKeyStore = {
     const dekRaw = base64ToUint8Array(dekRawString);
 
     // 2. Decrypt the Private Key using the DEK
-    const decryptedPrivateKeyString = await decrypt(base64ToUint8Array(privateKeyRecord.privateKey), dekRaw);
+    const decryptedPrivateKeyString = await decrypt(
+      base64ToUint8Array(privateKeyRecord.privateKey),
+      dekRaw
+    );
 
     return JSON.parse(decryptedPrivateKeyString);
-  }
-}
+  },
+};
 
 /**
  * Implements the JwksRotationTimestampStore interface for managing JWKS rotation timestamps.
@@ -178,5 +170,5 @@ export const rotationTimestampStore: JwksRotationTimestampStore = {
     // because we can derive it from the created_at field of the private key record.
     // However, if you want to implement a separate mechanism for tracking rotation timestamps,
     // you could add a new table in the database and implement the logic here to store and retrieve it.
-  }
-}
+  },
+};

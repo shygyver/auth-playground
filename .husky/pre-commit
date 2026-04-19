@@ -1,0 +1,4 @@
+#!/usr/bin/env sh
+bun run fmt:staged || exit 1
+bun run check || exit 1
+git add .

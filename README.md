@@ -3,6 +3,15 @@ A playground monorepo featuring various authorization server implementations.
 
 ---
 
+## Features
+
+- Multiple **apps** in one monorepo
+- Written in **TypeScript** with project references
+- Managed with **bun**
+- Shared utilities and configs (e.g. prettier, tsconfig)
+
+---
+
 ## Structure
 
 ```
@@ -35,6 +44,16 @@ bun run dev:oidc-app
 ```
 
 Replace `oidc-app` with the name of the app you want to run (e.g., `oidc-persistent-app`).
+
+### 3. Using nix
+
+If you have Nix installed, you can drop into a fully configured development shell without manually installing Bun or other system dependencies.
+
+```bash
+nix develop --extra-experimental-features "nix-command flakes"
+```
+
+Once the shell is active, you can proceed with `bun install` and start developing.
 
 ---
 

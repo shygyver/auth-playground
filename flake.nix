@@ -19,7 +19,7 @@
           ];
 
           shellHook = ''
-            echo "🌿 Bun development environment loaded!"
+            echo "🥟 Bun development environment loaded!"
             bun --version
           '';
         };

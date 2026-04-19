@@ -1,19 +1,4 @@
-import { Hono } from "hono";
-import { cors } from "hono/cors";
-import { html } from "hono/html";
-import { HTTPException } from "hono/http-exception";
-
-import { describeRoute, openAPIRouteHandler } from "hono-openapi";
-import { Scalar } from "@scalar/hono-api-reference";
-
 import { HonoOIDCAuthorizationCodeFlowBuilder } from "@saurbit/hono-oauth2";
-
-import {
-  createInMemoryKeyStore,
-  JoseJwksAuthority,
-  JwksRotator,
-} from "@saurbit/oauth2-jwt";
-
 import {
   AccessDeniedError,
   StrategyInsufficientScopeError,
@@ -21,6 +6,13 @@ import {
   UnauthorizedClientError,
   UnsupportedGrantTypeError,
 } from "@saurbit/oauth2";
+import { createInMemoryKeyStore, JoseJwksAuthority, JwksRotator } from "@saurbit/oauth2-jwt";
+import { Scalar } from "@scalar/hono-api-reference";
+import { Hono } from "hono";
+import { describeRoute, openAPIRouteHandler } from "hono-openapi";
+import { cors } from "hono/cors";
+import { html } from "hono/html";
+import { HTTPException } from "hono/http-exception";
 
 declare module "@saurbit/oauth2" {
   interface UserCredentials {
@@ -51,9 +43,7 @@ const CLIENT = {
   id: "example-client",
   secret: "example-secret",
   grants: ["authorization_code"],
-  redirectUris: [
-    "http://localhost:3000/scalar",
-  ],
+  redirectUris: ["http://localhost:3000/scalar"],
   scopes: ["openid", "profile", "email", "content:read", "content:write"],
 };
 
@@ -108,16 +98,10 @@ const flow = HonoOIDCAuthorizationCodeFlowBuilder.create({
   .noneAuthenticationMethod()
   .setAccessTokenLifetime(3600)
   .setOpenIdConfiguration({
-    claims_supported: [
-      "sub", "aud", "iss", "exp", "iat", "nbf",
-      "name", "email", "username",
-    ],
+    claims_supported: ["sub", "aud", "iss", "exp", "iat", "nbf", "name", "email", "username"],
   })
   .getClientForAuthentication((data) => {
-    if (
-      data.clientId === CLIENT.id &&
-      CLIENT.redirectUris.includes(data.redirectUri)
-    ) {
+    if (data.clientId === CLIENT.id && CLIENT.redirectUris.includes(data.redirectUri)) {
       return {
         id: CLIENT.id,
         grants: CLIENT.grants,
@@ -260,9 +244,7 @@ const flow = HonoOIDCAuthorizationCodeFlowBuilder.create({
       }
     } catch (error) {
       console.error("Token verification error:", {
-        error: error instanceof Error
-          ? { name: error.name, message: error.message }
-          : error,
+        error: error instanceof Error ? { name: error.name, message: error.message } : error,
       });
     }
     return { isValid: false };
@@ -296,9 +278,7 @@ app.get(flow.getJwksEndpoint(), async (c) => {
 app.get(flow.getAuthorizationEndpoint(), async (c) => {
   const result = await flow.hono().initiateAuthorization(c);
   if (result.success) {
-    return c.html(
-      HtmlFormContent({ usernameField: "username", passwordField: "password" }),
-    );
+    return c.html(HtmlFormContent({ usernameField: "username", passwordField: "password" }));
   }
   return c.json({ error: "invalid_request" }, 400);
 });
@@ -311,14 +291,14 @@ app.post(flow.getAuthorizationEndpoint(), async (c) => {
       const error = result.error;
       if (result.redirectable) {
         const qs = [
-          `error=${encodeURIComponent(
-            error instanceof AccessDeniedError ? error.errorCode : "invalid_request"
-          )}`,
+          `error=${encodeURIComponent(error instanceof AccessDeniedError ? error.errorCode : "invalid_request")}`,
           `error_description=${encodeURIComponent(
             error instanceof AccessDeniedError ? error.message : "Invalid request"
           )}`,
           result.state ? `state=${encodeURIComponent(result.state)}` : null,
-        ].filter(Boolean).join("&");
+        ]
+          .filter(Boolean)
+          .join("&");
         return c.redirect(`${result.redirectUri}?${qs}`);
       }
       return c.html(
@@ -327,13 +307,15 @@ app.post(flow.getAuthorizationEndpoint(), async (c) => {
           passwordField: "password",
           errorMessage: error.message,
         }),
-        400,
+        400
       );
     }
 
     if (result.type === "code") {
-      const { code, context: { state, redirectUri } } =
-        result.authorizationCodeResponse;
+      const {
+        code,
+        context: { state, redirectUri },
+      } = result.authorizationCodeResponse;
       const searchParams = new URLSearchParams();
       searchParams.set("code", code);
       if (state) searchParams.set("state", state);
@@ -347,14 +329,12 @@ app.post(flow.getAuthorizationEndpoint(), async (c) => {
           passwordField: "password",
           errorMessage: result.message || "Authentication failed. Please try again.",
         }),
-        400,
+        400
       );
     }
   } catch (error) {
     console.error("Unexpected error at authorization endpoint:", {
-      error: error instanceof Error
-        ? { name: error.name, message: error.message }
-        : error,
+      error: error instanceof Error ? { name: error.name, message: error.message } : error,
     });
     return c.html(
       HtmlFormContent({
@@ -362,7 +342,7 @@ app.post(flow.getAuthorizationEndpoint(), async (c) => {
         passwordField: "password",
         errorMessage: "An unexpected error occurred. Please try again later.",
       }),
-      500,
+      500
     );
   }
 });
@@ -373,14 +353,8 @@ app.post(flow.getTokenEndpoint(), async (c) => {
     return c.json(result.tokenResponse);
   }
   const error = result.error;
-  if (
-    error instanceof UnsupportedGrantTypeError ||
-    error instanceof UnauthorizedClientError
-  ) {
-    return c.json(
-      { error: error.errorCode, errorDescription: error.message },
-      400,
-    );
+  if (error instanceof UnsupportedGrantTypeError || error instanceof UnauthorizedClientError) {
+    return c.json({ error: error.errorCode, errorDescription: error.message }, 400);
   }
   return c.json({ error: "invalid_request" }, 400);
 });
@@ -418,7 +392,7 @@ app.get(
       name: scope.includes("profile") ? user?.fullName : undefined,
       email: scope.includes("email") ? user?.email : undefined,
     });
-  },
+  }
 );
 
 app.get(
@@ -448,7 +422,7 @@ app.get(
     return c.json({
       message: `Hello, ${user?.fullName}! You have accessed a protected resource.`,
     });
-  },
+  }
 );
 
 app.get(
@@ -460,7 +434,7 @@ app.get(
         securitySchemes: { ...flow.toOpenAPISecurityScheme() },
       },
     },
-  }),
+  })
 );
 
 app.get("/scalar", Scalar({ url: "/openapi.json", theme: "mars" }));
@@ -476,29 +450,40 @@ function HtmlFormContent(props: {
   usernameField: string;
   passwordField: string;
 }) {
-  return html`
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>Sign in</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-</head>
-<body>
-  <h1>Sign in</h1>
-  ${props.errorMessage ? html`<p style="color:red">${props.errorMessage}</p>` : ""}
-  <form method="POST">
-    <label for="${props.usernameField}">${props.usernameField}</label>
-    <input id="${props.usernameField}" name="${props.usernameField}" type="text" autocomplete="username" required />
-    <label for="${props.passwordField}">${props.passwordField}</label>
-    <input id="${props.passwordField}" name="${props.passwordField}" type="password" autocomplete="current-password" required />
-    <button type="submit">Sign in</button>
-  </form>
-</body>
-</html>`;
+  return html` <!DOCTYPE html>
+    <html lang="en">
+      <head>
+        <meta charset="UTF-8" />
+        <title>Sign in</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      </head>
+      <body>
+        <h1>Sign in</h1>
+        ${props.errorMessage ? html`<p style="color:red">${props.errorMessage}</p>` : ""}
+        <form method="POST">
+          <label for="${props.usernameField}">${props.usernameField}</label>
+          <input
+            id="${props.usernameField}"
+            name="${props.usernameField}"
+            type="text"
+            autocomplete="username"
+            required
+          />
+          <label for="${props.passwordField}">${props.passwordField}</label>
+          <input
+            id="${props.passwordField}"
+            name="${props.passwordField}"
+            type="password"
+            autocomplete="current-password"
+            required
+          />
+          <button type="submit">Sign in</button>
+        </form>
+      </body>
+    </html>`;
 }
 
 export default {
   port: 3000,
   fetch: app.fetch,
-}
+};
