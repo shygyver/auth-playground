@@ -10,11 +10,11 @@ Stores only one private key along with its metadata, including a wrapped Data En
 ```sql
 CREATE TABLE IF NOT EXISTS private_keys
 (
-    key_id character varying(255) COLLATE pg_catalog."default" NOT NULL,
+    key_id character varying(255) NOT NULL,
     id integer NOT NULL DEFAULT 1,
-    private_key text COLLATE pg_catalog."default" NOT NULL,
+    private_key text NOT NULL,
+    wrapped_dek text NOT NULL,
     expires_at timestamp with time zone NOT NULL,
-    wrapped_dek text COLLATE pg_catalog."default" NOT NULL,
     created_at timestamp with time zone NOT NULL DEFAULT now(),
     CONSTRAINT private_keys_pkey PRIMARY KEY (key_id),
     CONSTRAINT private_keys_id_unique UNIQUE (id),
@@ -27,8 +27,8 @@ Stores public keys along with their expiration timestamp.
 ```sql
 CREATE TABLE IF NOT EXISTS public_keys
 (
-    key_id character varying(255) COLLATE pg_catalog."default" NOT NULL,
-    public_key text COLLATE pg_catalog."default" NOT NULL,
+    key_id character varying(255) NOT NULL,
+    public_key text NOT NULL,
     expires_at timestamp with time zone NOT NULL,
     created_at timestamp with time zone NOT NULL DEFAULT now(),
     CONSTRAINT public_keys_pkey PRIMARY KEY (key_id)

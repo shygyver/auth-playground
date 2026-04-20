@@ -129,3 +129,15 @@ export async function getPrivateKeyCreatedAt(): Promise<Date | null> {
 
   return null;
 }
+
+export async function deleteExpiredKeys() {
+  const queryPrivateKeys = "DELETE FROM private_keys WHERE expires_at <= NOW()";
+  const queryPublicKeys = "DELETE FROM public_keys WHERE expires_at <= NOW()";
+
+  try {
+    await pool.query(queryPrivateKeys);
+    await pool.query(queryPublicKeys);
+  } catch (err) {
+    console.error("Error deleting expired keys:", err);
+  }
+}

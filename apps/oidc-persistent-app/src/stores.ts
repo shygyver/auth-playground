@@ -1,4 +1,5 @@
 import {
+  deleteExpiredKeys,
   getPrivateKeyCreatedAt,
   getPrivateKeyRecord,
   getPublicKeyRecords,
@@ -159,6 +160,7 @@ export const jwksStore: JwksKeyStore = {
  */
 export const rotationTimestampStore: JwksRotationTimestampStore = {
   async getLastRotationTimestamp(): Promise<number> {
+    await deleteExpiredKeys(); // Clean up expired keys before checking the last rotation timestamp
     const createdAt = await getPrivateKeyCreatedAt();
     if (!createdAt) {
       return 0; // No keys have been created yet, so we can consider the last rotation timestamp as 0
