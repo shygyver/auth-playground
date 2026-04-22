@@ -18,6 +18,7 @@ A playground monorepo featuring various authorization server implementations.
 /apps
   /oidc-app
   /oidc-persistent-app
+  /oidc-consent-app
 ```
 
 ---
