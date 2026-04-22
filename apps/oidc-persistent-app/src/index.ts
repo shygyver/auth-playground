@@ -2,6 +2,7 @@ import { jwksStore, rotationTimestampStore } from "./stores";
 import { HonoOIDCAuthorizationCodeFlowBuilder } from "@saurbit/hono-oauth2";
 import {
   AccessDeniedError,
+  getOriginFromRequest,
   StrategyInsufficientScopeError,
   StrategyInternalError,
   UnauthorizedClientError,
@@ -437,10 +438,7 @@ app.get(
 );
 
 app.get("/openapi.json", async (c, n) => {
-  const url = new URL(c.req.raw.url);
-  const forwardedProto = c.req.raw.headers.get("x-forwarded-proto");
-  const protocol = forwardedProto ? forwardedProto : url.protocol.replace(":", "");
-  const issuer = protocol + "://" + url.host;
+  const issuer = getOriginFromRequest(c.req.raw);
 
   const schemes = flow.toOpenAPISecurityScheme();
 
