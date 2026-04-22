@@ -666,6 +666,6 @@ function HtmlConsentContent(props: { scope: string[]; app: string; userFullName:
 }
 
 export default {
-  port: 3000,
+  port: 3002,
   fetch: app.fetch,
 };
