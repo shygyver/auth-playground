@@ -24,7 +24,10 @@ declare module "@saurbit/oauth2" {
   }
 }
 
-const ISSUER = "http://localhost:3001";
+// TODO: we might need issuer in request context for some operations (e.g. token verification) if we want to support multiple issuers in the future. For now we can hardcode it since this example only has one issuer.
+
+// remove issuer hardcoding when we have a better way to determine it (e.g. from request context or configuration)
+// const ISSUER = process.env.ISSUER || "http://localhost:3001";
 const DISCOVERY_ENDPOINT_PATH = "/.well-known/openid-configuration";
 
 const jwksAuthority = new JoseJwksAuthority(jwksStore, 8.64e6); // 100-day key lifetime
@@ -37,11 +40,17 @@ const jwksRotator = new JwksRotator({
   rotationIntervalMs: 7.884e9, // 91 days
 });
 
-const CLIENT = {
+const CLIENT: {
+  id: string;
+  secret: string;
+  grants: string[];
+  redirectUris: string[];
+  scopes: string[];
+} = {
   id: "example-client",
   secret: "example-secret",
   grants: ["authorization_code"],
-  redirectUris: ["http://localhost:3001/scalar"],
+  redirectUris: [],
   scopes: ["openid", "profile", "email", "content:read", "content:write"],
 };
 
@@ -87,7 +96,7 @@ const flow = HonoOIDCAuthorizationCodeFlowBuilder.create({
     "content:write": "Access to write content",
   })
   .setDescription("Example OpenID Connect Authorization Code Flow")
-  .setDiscoveryUrl(`${ISSUER}${DISCOVERY_ENDPOINT_PATH}`)
+  .setDiscoveryUrl(`${DISCOVERY_ENDPOINT_PATH}`)
   .setJwksEndpoint("/.well-known/jwks.json")
   .setAuthorizationEndpoint("/authorize")
   .setTokenEndpoint("/token")
@@ -99,7 +108,11 @@ const flow = HonoOIDCAuthorizationCodeFlowBuilder.create({
     claims_supported: ["sub", "aud", "iss", "exp", "iat", "nbf", "name", "email", "username"],
   })
   .getClientForAuthentication((data) => {
-    if (data.clientId === CLIENT.id && CLIENT.redirectUris.includes(data.redirectUri)) {
+    if (
+      data.clientId === CLIENT.id &&
+      (data.redirectUri === `${data.origin}/scalar` ||
+        CLIENT.redirectUris.includes(data.redirectUri))
+    ) {
       return {
         id: CLIENT.id,
         grants: CLIENT.grants,
@@ -192,7 +205,7 @@ const flow = HonoOIDCAuthorizationCodeFlowBuilder.create({
       exp: Math.floor(Date.now() / 1000) + grantContext.accessTokenLifetime,
       iat: Math.floor(Date.now() / 1000),
       nbf: Math.floor(Date.now() / 1000),
-      iss: ISSUER,
+      iss: grantContext.origin,
       aud: grantContext.client.id,
       jti: crypto.randomUUID(),
       sub: `${grantContext.client.metadata?.userId}`,
@@ -423,17 +436,30 @@ app.get(
   }
 );
 
-app.get(
-  "/openapi.json",
-  openAPIRouteHandler(app, {
+app.get("/openapi.json", async (c, n) => {
+  const url = new URL(c.req.raw.url);
+  const forwardedProto = c.req.raw.headers.get("x-forwarded-proto");
+  const protocol = forwardedProto ? forwardedProto : url.protocol.replace(":", "");
+  const issuer = protocol + "://" + url.host;
+
+  const schemes = flow.toOpenAPISecurityScheme();
+
+  for (const schemeName in schemes) {
+    if (schemeName === "openidConnect") {
+      schemes[schemeName].openIdConnectUrl = `${issuer}${schemes[schemeName].openIdConnectUrl}`;
+      break;
+    }
+  }
+
+  return await openAPIRouteHandler(app, {
     documentation: {
       info: { title: "Auth Server API", version: "0.1.0" },
       components: {
-        securitySchemes: { ...flow.toOpenAPISecurityScheme() },
+        securitySchemes: { ...schemes },
       },
     },
-  })
-);
+  })(c, n);
+});
 
 app.get(
   "/scalar",

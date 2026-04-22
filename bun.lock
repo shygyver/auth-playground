@@ -18,7 +18,7 @@
       "dependencies": {
         "@hono/standard-validator": "^0.2.2",
         "@saurbit/hono-oauth2": "^0.1.2",
-        "@saurbit/oauth2": "0.1.2",
+        "@saurbit/oauth2": "^0.1.3",
         "@saurbit/oauth2-jwt": "0.1.3",
         "@scalar/hono-api-reference": "^0.10.7",
         "hono": "^4.12.12",
@@ -33,7 +33,7 @@
       "dependencies": {
         "@hono/standard-validator": "^0.2.2",
         "@saurbit/hono-oauth2": "^0.1.2",
-        "@saurbit/oauth2": "0.1.2",
+        "@saurbit/oauth2": "^0.1.3",
         "@saurbit/oauth2-jwt": "0.1.3",
         "@scalar/hono-api-reference": "^0.10.7",
         "hono": "^4.12.12",
@@ -48,7 +48,7 @@
       "dependencies": {
         "@hono/standard-validator": "^0.2.2",
         "@saurbit/hono-oauth2": "^0.1.2",
-        "@saurbit/oauth2": "0.1.2",
+        "@saurbit/oauth2": "^0.1.3",
         "@saurbit/oauth2-jwt": "0.1.3",
         "@scalar/hono-api-reference": "^0.10.7",
         "hono": "^4.12.12",
@@ -94,7 +94,7 @@
 
     "@saurbit/hono-oauth2": ["@saurbit/hono-oauth2@0.1.2", "", { "dependencies": { "hono": "^4.12.9" }, "peerDependencies": { "@saurbit/oauth2": "^0.1.0" } }, "sha512-qqt7Gya9Uw/xjqSHa8cujbYCEFZhrRtVSTz9kaiHerCp4CwVLEHorAgW/x95cyDpoNjEkRLchHn85CjReACJ6Q=="],
 
-    "@saurbit/oauth2": ["@saurbit/oauth2@0.1.2", "", {}, "sha512-epkMxNhcrOiuaMddQEWugj0oJVJUrf6h1MxKSmANrkp0CT68Sma5NVenWTlTKpsnF1KGvRG8z0MZCoLwrtc9mw=="],
+    "@saurbit/oauth2": ["@saurbit/oauth2@0.1.3", "", {}, "sha512-Wnjxen8q9E0HubNMXAtqiDVQIFs5GSuLBP/m0KzeW5jGjJ89b2hOOpUoJr1Swek6PQ7ZgP0wrJE9xypvauH1oA=="],
 
     "@saurbit/oauth2-jwt": ["@saurbit/oauth2-jwt@0.1.3", "", { "dependencies": { "jose": "^6.2.2" }, "peerDependencies": { "@saurbit/oauth2": "^0.1.1" } }, "sha512-FkjTwRkvZ2lj4gp/ssIzHn8x/ttglyYt4Wqb6iLPJrSISTcmh7LNYSCewwteuG//xIfXmt4q7Jct/9MQmYNlxg=="],
 
