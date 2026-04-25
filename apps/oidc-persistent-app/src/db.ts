@@ -1,6 +1,9 @@
 import { Pool } from "pg";
 
-const ENV_DATABASE_URL = process.env.DATABASE_URL;
+const ENV_DATABASE_URL = process.env.DATABASE_URL!.replace(
+  "sslmode=require",
+  "sslmode=verify-full"
+);
 
 const pool = new Pool({
   connectionString: ENV_DATABASE_URL,
@@ -8,7 +11,7 @@ const pool = new Pool({
   idleTimeoutMillis: 30000,
   connectionTimeoutMillis: 2000,
   ssl: {
-    rejectUnauthorized: false,
+    rejectUnauthorized: true,
   },
 });
 
