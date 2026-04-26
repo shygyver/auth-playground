@@ -40,3 +40,20 @@ The application implements a key management strategy that includes:
 - **Key Generation**: New key pairs are generated using the `jwksAuthority` module, which creates RSA key pairs for signing JWTs.
 - **Key Rotation**: Keys are rotated every 91 days using the `JwksRotator` module, which checks the rotation schedule and generates new keys as needed.
 - **Key Storage**: Private keys are encrypted using AES-GCM and stored in the `private_keys` table, while public keys are stored in the `public_keys` table. The encryption and decryption processes ensure that private keys are securely stored and can be retrieved when needed for signing operations.
+
+## Environment Variables
+The application requires the following environment variables to be set:
+- `DATABASE_URL`: The connection string for the PostgreSQL database.
+- `MASTER_KEY`: The master key used for encrypting and decrypting the Data Encryption Key (DEK). It should be a 32-byte key encoded in base64.
+
+## Running the Application
+To run the application, follow these steps:
+1. Set up the PostgreSQL database and create the necessary tables using the provided SQL schema.
+2. Install dependencies using Bun:
+   ```bash
+   bun install
+   ```
+3. Set the required environment variables and start the application:
+   ```bash
+   bunx cross-env DATABASE_URL="your_database_url" MASTER_KEY="your_base64_encoded_master_key" bun dev
+   ```
