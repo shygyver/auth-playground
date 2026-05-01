@@ -31,4 +31,4 @@ An OpenID Connect (OIDC) server implementation built using Bun. This app serves 
     bun run dev:oidc-consent-app
     ```
 
-5. Open your browser and navigate to `http://localhost:3000/scalar` to access the API documentation.
+5. Open your browser and navigate to `http://localhost:3002/scalar` to access the API documentation.
