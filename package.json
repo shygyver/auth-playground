@@ -1,30 +1,33 @@
 {
   "name": "auth-playground",
   "version": "0.1.0",
-  "workspaces": [
-    "apps/*"
-  ],
   "devDependencies": {
     "@trivago/prettier-plugin-sort-imports": "^6.0.2",
     "@types/bun": "^1.3.12",
     "cross-env": "^10.1.0",
     "husky": "^9.1.7",
     "lint-staged": "^16.4.0",
-    "prettier": "3.8.3"
+    "prettier": "3.8.3",
+    "turbo": "^2.9.7"
   },
   "scripts": {
-    "build": "bun run build:oidc-app && bun run build:oidc-persistent-app && bun run build:oidc-consent-app",
-    "build:oidc-app": "bun run --filter oidc-app build",
-    "build:oidc-persistent-app": "bun run --filter oidc-persistent-app build",
-    "build:oidc-consent-app": "bun run --filter oidc-consent-app build",
-    "check": "bun run check:oidc-app && bun run check:oidc-persistent-app && bun run check:oidc-consent-app",
-    "check:oidc-app": "cd apps/oidc-app && bun run check",
-    "check:oidc-persistent-app": "cd apps/oidc-persistent-app && bun run check",
-    "check:oidc-consent-app": "cd apps/oidc-consent-app && bun run check",
-    "dev:oidc-app": "cd apps/oidc-app && bun run dev",
-    "dev:oidc-persistent-app": "cd apps/oidc-persistent-app && bun run dev",
-    "dev:oidc-consent-app": "cd apps/oidc-consent-app && bun run dev",
+    "build": "turbo run build",
+    "build:oidc-app": "turbo run build --filter=oidc-app",
+    "build:oidc-persistent-app": "turbo run build --filter=oidc-persistent-app",
+    "build:oidc-consent-app": "turbo run build --filter=oidc-consent-app",
+    "check": "turbo run check",
+    "check:oidc-app": "turbo run check --filter=oidc-app",
+    "check:oidc-persistent-app": "turbo run check --filter=oidc-persistent-app",
+    "check:oidc-consent-app": "turbo run check --filter=oidc-consent-app",
+    "dev": "turbo run dev --filter=!oidc-persistent-app",
+    "dev:oidc-app": "turbo run dev --filter=oidc-app",
+    "dev:oidc-persistent-app": "turbo run dev --filter=oidc-persistent-app",
+    "dev:oidc-consent-app": "turbo run dev --filter=oidc-consent-app",
     "fmt": "cross-env NODE_OPTIONS=--experimental-strip-types prettier --write ./",
     "fmt:staged": "cross-env NODE_OPTIONS=--experimental-strip-types lint-staged"
-  }
+  },
+  "packageManager": "bun@1.3.11",
+  "workspaces": [
+    "apps/*"
+  ]
 }
