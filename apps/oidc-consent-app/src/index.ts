@@ -172,17 +172,22 @@ const flow = HonoOIDCAuthorizationCodeFlowBuilder.create<Env, ParsedData>({
     // Check for existing session first
     if (parsedData.sessionCookie) {
       const session = sessionStorage[parsedData.sessionCookie];
-      if (session && session.expiresAt > Date.now() && session.userId === USER.id) {
-        return {
-          type: "authenticated",
-          user: {
-            id: USER.id,
-            fullName: USER.fullName,
-            email: USER.email,
-            username: USER.username,
-            consentStatus: parsedData.consent,
-          },
-        };
+      if (session) {
+        if (session.expiresAt <= Date.now()) {
+          // Session expired, clean up
+          delete sessionStorage[parsedData.sessionCookie];
+        } else if (session.expiresAt > Date.now() && session.userId === USER.id) {
+          return {
+            type: "authenticated",
+            user: {
+              id: USER.id,
+              fullName: USER.fullName,
+              email: USER.email,
+              username: USER.username,
+              consentStatus: parsedData.consent, // carry the consent decision  forward
+            },
+          };
+        }
       }
     }
     // If no valid session, check credentials
