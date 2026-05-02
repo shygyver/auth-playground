@@ -56,7 +56,7 @@ nix develop --extra-experimental-features "nix-command flakes"
 
 Once the shell is active, you can proceed with `bun install` and start developing.
 
-### Using Docker
+### 4. Using Docker
 
 Each app has its own Dockerfile for containerization. To build and run an app using Docker, follow these steps:
 1. Build the Docker image for the desired app (replace `oidc-app` with the target app name):
@@ -79,7 +79,7 @@ Each app has its own Dockerfile for containerization. To build and run an app us
    docker run -p 3001:3001 --env-file ./apps/oidc-persistent-app/.env oidc-persistent-app
    ```
 
-### Using Docker Compose
+### 5. Using Docker Compose
 
 A `docker-compose.yml` file is provided for easier management of multiple services. To start a service defined in the compose file, run:
 
