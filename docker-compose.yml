@@ -1,0 +1,48 @@
+services:
+  oidc-app:
+    image: oidc-app
+    build:
+      context: .
+      dockerfile: apps/oidc-app/Dockerfile
+    ports:
+      - "3000:3000"
+  oidc-persistent-app:
+    image: oidc-persistent-app
+    build:
+      context: .
+      dockerfile: apps/oidc-persistent-app/Dockerfile
+    ports:
+      - "3001:3001"
+    env_file:
+      - apps/oidc-persistent-app/.env
+    # Comment out the environment variables below if you are using the .env file, otherwise set them here
+    environment:
+      DATABASE_URL: postgres://postgres:password@postgres:5432/oidc # Database connection string for the postgres service defined below
+      MASTER_KEY: 8HZyhEmLIH5hlUo4sYDr0OT4zb//QbYdIt+Jw44vw/w= # A 32-byte key in base64 format
+    # Comment out the depends_on section if you are using an external database instead of the postgres service defined below
+    depends_on:
+      postgres:
+        condition: service_healthy
+  oidc-consent-app:
+    image: oidc-consent-app
+    build:
+      context: .
+      dockerfile: apps/oidc-consent-app/Dockerfile
+    ports:
+      - "3002:3002"
+
+  postgres:
+    image: postgres:18.3-alpine
+    volumes:
+      - ./.docker-compose/postgres:/docker-entrypoint-initdb.d
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: oidc
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5

@@ -2,7 +2,7 @@
   "name": "oidc-app",
   "scripts": {
     "build": "bun build ./src/index.ts --outdir ./dist --target bun",
-    "check": "bun x tsc --noEmit",
+    "check": "tsc --noEmit",
     "dev": "bun run --hot src/index.ts"
   },
   "dependencies": {
