@@ -1,5 +1,5 @@
 {
-  "name": "oidc-persistent-app",
+  "name": "oidc-refresh-app",
   "scripts": {
     "build": "bun build ./src/index.ts --outdir ./dist --target bun",
     "check": "tsc --noEmit",
@@ -10,13 +10,11 @@
     "@saurbit/hono-oauth2": "^0.1.3",
     "@saurbit/oauth2": "^0.1.4",
     "@saurbit/oauth2-jwt": "^0.1.3",
-    "@scalar/hono-api-reference": "^0.10.7",
+    "@scalar/hono-api-reference": "^0.10.13",
     "hono": "^4.12.16",
-    "hono-openapi": "^1.3.0",
-    "pg": "^8.20.0"
+    "hono-openapi": "^1.3.0"
   },
   "devDependencies": {
-    "@types/bun": "^1.3.12",
-    "@types/pg": "^8.20.0"
+    "@types/bun": "^1.3.12"
   }
 }

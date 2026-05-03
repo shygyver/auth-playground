@@ -30,6 +30,13 @@ services:
       dockerfile: apps/oidc-consent-app/Dockerfile
     ports:
       - "3002:3002"
+  oidc-refresh-app:
+    image: oidc-refresh-app
+    build:
+      context: .
+      dockerfile: apps/oidc-refresh-app/Dockerfile
+    ports:
+      - "3003:3003"
 
   postgres:
     image: postgres:18.3-alpine
