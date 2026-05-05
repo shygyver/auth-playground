@@ -760,7 +760,7 @@ app.get("/openapi.json", async (c, n) => {
 
 app.get(
   "/scalar",
-  Scalar({ url: "/openapi.json", theme: "moon", showDeveloperTools: "localhost" })
+  Scalar({ url: "/openapi.json", theme: "kepler", showDeveloperTools: "localhost" })
 );
 
 await jwksRotator.checkAndRotateKeys();
