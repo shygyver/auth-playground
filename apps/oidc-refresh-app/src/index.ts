@@ -452,9 +452,7 @@ const flow = HonoOIDCAuthorizationCodeFlowBuilder.create<Env, ParsedData>({
       email: accessScope.includes("email")
         ? `${grantContext.client.metadata?.userEmail}`
         : undefined,
-      nonce: grantContext.client.metadata?.nonce
-        ? `${grantContext.client.metadata?.nonce}`
-        : undefined,
+      // no nonce in refresh token flow as it's only used in the initial authentication to mitigate replay attacks
       ...registeredClaims,
     });
 

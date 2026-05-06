@@ -57,3 +57,9 @@ To run the application, follow these steps:
    ```bash
    bunx cross-env DATABASE_URL="your_database_url" MASTER_KEY="your_base64_encoded_master_key" bun dev
    ```
+
+## Testing the OIDC Authorization code flow + PKCE
+
+- Client ID: `example-client`
+- username: `user`
+- password: `crossterm`

@@ -32,3 +32,9 @@ An OpenID Connect (OIDC) server implementation built using Bun. This app serves 
     ```
 
 5. Open your browser and navigate to `http://localhost:3003/scalar` to access the API documentation.
+
+## Testing the OIDC Authorization code flow + PKCE
+
+- Client ID: `example-client`
+- username: `user`
+- password: `crossterm`
