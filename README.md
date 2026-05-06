@@ -93,6 +93,12 @@ For services that require environment variables, specify them directly in the `d
 
 ---
 
+## App-Specific Documentation
+
+You can find more detailed documentation for each app in their respective directories under `/apps`. Each app has its own README with specific instructions, environment variable requirements, and additional features.
+
+---
+
 ## License
 
 MIT
