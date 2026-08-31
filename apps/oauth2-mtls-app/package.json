@@ -1,0 +1,17 @@
+{
+  "name": "oauth2-mtls-app",
+  "scripts": {
+    "build": "bun build ./src/index.ts --outdir ./dist --target bun",
+    "check": "tsc --noEmit",
+    "dev": "bun run --hot src/index.ts"
+  },
+  "dependencies": {
+    "@saurbit/hono-oauth2": "^0.1.9",
+    "@saurbit/oauth2": "^0.1.14",
+    "@saurbit/oauth2-jwt": "^0.1.10",
+    "hono": "^4.13.5"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.4.0"
+  }
+}
