@@ -14,7 +14,6 @@ To make your @saurbit/oauth2 flow work, the proxy must be configured to do two t
    2. Sanitize and Inject the Header: Strip any incoming x-ssl-client-cert headers from the open internet (to prevent spoofing attacks) and overwrite it with the verified PEM string before routing the request downstream to your application.
  */
 import { findClientById } from "../data";
-import { MtlsClientAuthMethod } from "./mtls-client-auth-method";
 import { MtlsTokenType, MtlsTokenTypeValidationResponse } from "./mtls-token-type";
 import { HonoClientCredentialsFlowBuilder } from "@saurbit/hono-oauth2";
 import { StrategyInsufficientScopeError, StrategyInternalError } from "@saurbit/oauth2";
@@ -31,14 +30,10 @@ const jwksStore = createInMemoryKeyStore();
 
 // Signs JWTs and exposes the public JWKS endpoint
 export const jwksAuthority = new JoseJwksAuthority(jwksStore, 8.64e6); // 100-day key lifetime
-
-const HEADER_NAME = "x-ssl-client-cert";
-
 const mtlsTokenType = new MtlsTokenType(
-  HEADER_NAME,
-  async (token) => await jwksAuthority.verify(token)
+  async (token) => await jwksAuthority.verify(token),
+  "x-ssl-client-cert"
 );
-const mtlsClientAuthMethod = new MtlsClientAuthMethod(HEADER_NAME);
 
 // OAuth2 Flow
 export const clientFlow = new HonoClientCredentialsFlowBuilder({
@@ -51,7 +46,7 @@ export const clientFlow = new HonoClientCredentialsFlowBuilder({
   accessTokenLifetime: 600, // 10 minutes in seconds
 })
   // Register your custom mTLS authenticator
-  .addClientAuthenticationMethod(mtlsClientAuthMethod)
+  .addClientAuthenticationMethod(mtlsTokenType.createClientAuthMethod())
 
   // Cleanly delegate token validation responsibility to your class instance
   .setTokenType(mtlsTokenType)
@@ -109,14 +104,16 @@ export const clientFlow = new HonoClientCredentialsFlowBuilder({
       : [];
 
     // Bake the 'cnf' thumbprint claim directly into the token structure
-    // (Ensure your JWT signing utility includes this payload)
-    const { token } = await jwksAuthority.sign({
-      sub: client.id,
-      cnf: {
-        "x5t#S256": thumbprint,
+    const claims = mtlsTokenType.addThumbprintToCnfClaim(
+      {
+        sub: client.id,
+        scope: accessScope.join(" "),
       },
-      scope: accessScope.join(" "),
-    });
+      thumbprint
+    );
+
+    // Sign the JWT with the updated claims containing the mTLS thumbprint
+    const { token } = await jwksAuthority.sign(claims);
 
     return token;
   })

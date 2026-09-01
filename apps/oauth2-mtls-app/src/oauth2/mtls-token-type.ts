@@ -1,3 +1,4 @@
+import { MtlsClientAuthMethod } from "./mtls-client-auth-method";
 import type {
   JwtDecode,
   JwtPayload,
@@ -33,10 +34,10 @@ export class MtlsTokenType implements TokenType {
   readonly prefix = "Bearer";
 
   constructor(
-    // Customize based on your reverse proxy configuration
-    private readonly certHeaderName: string = "x-ssl-client-cert",
     // Callback to decode/verify your JWT token payload
-    private readonly decodeTokenPayload: JwtDecode
+    private readonly decodeTokenPayload: JwtDecode,
+    // Customize based on your reverse proxy configuration
+    private readonly certHeaderName: string = "x-ssl-client-cert"
   ) {}
 
   /**
@@ -60,7 +61,7 @@ export class MtlsTokenType implements TokenType {
    */
   async isValid(request: Request, token: string): Promise<MtlsTokenTypeValidationResponse> {
     try {
-      // 1. Extract the client certificate from the current request
+      // Extract the client certificate from the current request
       const currentCertPem = request.headers.get(this.certHeaderName);
       if (!currentCertPem) {
         return {
@@ -69,11 +70,11 @@ export class MtlsTokenType implements TokenType {
         };
       }
 
-      // 2. Decode the JWT payload
+      // Decode the JWT payload
       const payload = await this.decodeTokenPayload(token);
       const cnf = payload?.cnf;
 
-      // 3. Confirm the token contains the sender-constrained confirmation claim
+      // Confirm the token contains the sender-constrained confirmation claim
       if (!(cnf && typeof cnf === "object" && "x5t#S256" in cnf && cnf["x5t#S256"])) {
         return {
           isValid: false,
@@ -81,7 +82,7 @@ export class MtlsTokenType implements TokenType {
         };
       }
 
-      // 4. Compare the WebCrypto-generated thumbprint against the token binding
+      // Compare the WebCrypto-generated thumbprint against the token binding
       const currentThumbprint = await this.calculateX5tS256(currentCertPem);
       if (currentThumbprint !== cnf["x5t#S256"]) {
         return {
@@ -97,13 +98,42 @@ export class MtlsTokenType implements TokenType {
           mtlsThumbprint: currentThumbprint,
         },
       };
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
+    } catch (error) {
       return {
         isValid: false,
-        message: `mTLS token validation encountered an error: ${error?.message || "Unknown error"}`,
+        message: `mTLS token validation encountered an error: ${error instanceof Error ? error.message : "Unknown error"}`,
       };
     }
+  }
+
+  /**
+   * Update the claims of a JWT payload to include the mTLS certificate thumbprint in the `cnf` claim.
+   * Use this when issuing an mTLS-bound access token to bind it to the public key of the client certificate.
+   *
+   * @param claims - The JWT claims object to which the mTLS certificate thumbprint will be added.
+   * @param thumbprint - The mTLS certificate thumbprint to add to the `cnf` claim.
+   * @returns The updated JWT claims object.
+   * @throws If the claims object is invalid or the thumbprint is not a non-empty string.
+   */
+  addThumbprintToCnfClaim(claims: JwtPayload, thumbprint: string): JwtPayload {
+    if (!claims || typeof claims !== "object") {
+      throw new Error("Invalid claims object");
+    }
+    let tmpThumbprint: string | undefined;
+    if (typeof thumbprint === "string" && thumbprint.length > 0) {
+      tmpThumbprint = thumbprint;
+    } else {
+      throw new Error("Invalid thumbprint argument");
+    }
+    const cnf: Record<string, unknown> =
+      claims.cnf && typeof claims.cnf === "object" ? (claims.cnf as Record<string, unknown>) : {};
+    cnf["x5t#S256"] = tmpThumbprint;
+    claims.cnf = cnf;
+    return claims;
+  }
+
+  createClientAuthMethod(): MtlsClientAuthMethod {
+    return new MtlsClientAuthMethod(this.certHeaderName);
   }
 
   /**
