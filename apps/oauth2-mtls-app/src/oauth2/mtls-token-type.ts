@@ -14,25 +14,23 @@ export interface MtlsTokenTypeValidationResponse extends TokenTypeValidationResp
 }
 
 /**
- * You must manually inject the cnf claim into the JWT body.
+ * {@link TokenType} implementation for the mTLS (Mutual TLS) token scheme.
  *
- * ```ts
- * const mtlsTokenType = new MtlsTokenType("x-ssl-client-cert", decodeJwt);
+ * Validates mTLS-bound access tokens on both the token endpoint and protected resource endpoints,
+ * ensuring that the presenting client certificate matches the token binding.
  *
- * const certPem = request.headers.get("x-ssl-client-cert")!;
- * const thumbprint = await mtlsTokenType.calculateX5tS256(certPem);
- *
- * const customClaims = {
- *   cnf: {
- *     "x5t#S256": thumbprint
- *   }
- * };
- * ```
+ * @see https://datatracker.ietf.org/doc/html/rfc8705
  */
 export class MtlsTokenType implements TokenType {
   // RFC 8705 mandates that mTLS-bound access tokens use the "Bearer" prefix
   readonly prefix = "Bearer";
 
+  /**
+   * Creates a new `MtlsTokenType` instance.
+   *
+   * @param decodeTokenPayload - Callback to decode/verify your JWT token payload.
+   * @param certHeaderName - The HTTP header name where the client certificate is expected (default: "x-ssl-client-cert").
+   */
   constructor(
     // Callback to decode/verify your JWT token payload
     private readonly decodeTokenPayload: JwtDecode,
@@ -41,7 +39,11 @@ export class MtlsTokenType implements TokenType {
   ) {}
 
   /**
-   * Validates the token request at the Token Endpoint before credentials check.
+   * Validates the mTLS client certificate on an incoming token endpoint request.
+   * Called before client credentials are verified.
+   *
+   * @param req - The incoming token endpoint HTTP request.
+   * @returns A validation response indicating whether the mTLS client certificate is present.
    */
   async isValidTokenRequest(request: Request): Promise<TokenTypeValidationResponse> {
     const clientCertPem = request.headers.get(this.certHeaderName);
@@ -57,7 +59,11 @@ export class MtlsTokenType implements TokenType {
   }
 
   /**
-   * Validates the token at the Protected Resource Server (API endpoints).
+   * Validates the mTLS client certificate on an incoming protected resource request.
+   *
+   * @param request - The incoming HTTP request.
+   * @param token - The mTLS-bound access token extracted from the `Authorization` header.
+   * @returns A validation response indicating whether the proof and token are valid.
    */
   async isValid(request: Request, token: string): Promise<MtlsTokenTypeValidationResponse> {
     try {
@@ -132,14 +138,22 @@ export class MtlsTokenType implements TokenType {
     return claims;
   }
 
+  /**
+   * Creates a new instance of the mTLS client authentication method using the configured certificate header name.
+   * @returns An instance of the mTLS client authentication method.
+   */
   createClientAuthMethod(): MtlsClientAuthMethod {
     return new MtlsClientAuthMethod(this.certHeaderName);
   }
 
   /**
-   * INTERNAL DATABASE HELPER
-   * Returns a lowercase Hex string. Use this inside .getClient()
-   * to match against standard OpenSSL fingerprints in your DB.
+   * Calculates the lowercase hexadecimal SHA-256 thumbprint of a PEM-encoded client certificate.
+   * This method could be useful for other verification purposes.
+   *
+   * Not officially part of the mTLS binding process.
+   *
+   * @param pem - The PEM-encoded client certificate.
+   * @returns The lowercase hexadecimal SHA-256 thumbprint of the certificate.
    */
   public async calculateHexThumbprint(pem: string): Promise<string> {
     const hashBuffer = await this.pemToHashBuffer(pem);
@@ -149,6 +163,9 @@ export class MtlsTokenType implements TokenType {
   /**
    * Parses a PEM string, extracts the binary DER bytes, and hashes it
    * using WebCrypto to produce an RFC 8705 compliant base64url SHA-256 thumbprint.
+   *
+   * @param pem - The PEM-encoded client certificate.
+   * @returns The base64url-encoded SHA-256 thumbprint of the certificate.
    */
   public async calculateX5tS256(pem: string): Promise<string> {
     const hashBuffer = await this.pemToHashBuffer(pem);
