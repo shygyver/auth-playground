@@ -76,6 +76,10 @@ export class MtlsClientAuthMethod implements ClientAuthMethod {
         return { hasAuthMethod: false };
       }
 
+      // TODO: Implement proper client certificate validation here.
+      // This may include checking the certificate's signature, expiration,
+      // and matching it against the registered client information.
+
       // Return the extracted credentials.
       // Instead of client_secret, we forward the client certificate payload
       // under the generic response fields required by @saurbit/oauth2.
