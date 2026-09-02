@@ -78,7 +78,7 @@ export class MtlsClientAuthMethod implements ClientAuthMethod {
 
       // TODO: Implement proper client certificate validation here.
       // This may include checking the certificate's signature, expiration,
-      // and matching it against the registered client information.
+      // and matching it against the registered client information (e.g. array of allowed certificates/thumbprints).
 
       // Return the extracted credentials.
       // Instead of client_secret, we forward the client certificate payload
