@@ -10,9 +10,11 @@
  *
  * @see https://datatracker.ietf.org/doc/html/rfc8705
  */
+import { MtlsCertificateBoundTokenType } from "./mtls_certificate_bound_token_type";
 import type {
   ClientAuthMethod,
   ClientAuthMethodResponse,
+  JwtDecode,
   TokenEndpointAuthMethod,
 } from "@saurbit/oauth2";
 
@@ -114,6 +116,10 @@ export class TlsClientAuthMethod implements ClientAuthMethod {
   ): this {
     this.#handler = handler;
     return this;
+  }
+
+  createCertificateBoundTokenType(decodeTokenPayload: JwtDecode) {
+    return new MtlsCertificateBoundTokenType(decodeTokenPayload, this.#certHeaderName);
   }
 
   /**

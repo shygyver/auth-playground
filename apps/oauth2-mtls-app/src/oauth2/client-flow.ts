@@ -14,10 +14,7 @@ To make your @saurbit/oauth2 flow work, the proxy must be configured to do two t
    2. Sanitize and Inject the Header: Strip any incoming x-ssl-client-cert headers from the open internet (to prevent spoofing attacks) and overwrite it with the verified PEM string before routing the request downstream to your application.
  */
 import { findClientById, findClientBySubjectDnAndId } from "../data";
-import {
-  MtlsCertificateBoundTokenType,
-  CertificateBoundValidationResponse,
-} from "./mtls_certificate_bound_token_type";
+import { CertificateBoundValidationResponse } from "./mtls_certificate_bound_token_type";
 import { TlsClientAuthMethod } from "./tls_client_auth";
 import { HonoClientCredentialsFlowBuilder } from "@saurbit/hono-oauth2";
 import { StrategyInsufficientScopeError, StrategyInternalError } from "@saurbit/oauth2";
@@ -34,10 +31,6 @@ const jwksStore = createInMemoryKeyStore();
 
 // Signs JWTs and exposes the public JWKS endpoint
 export const jwksAuthority = new JoseJwksAuthority(jwksStore, 8.64e6); // 100-day key lifetime
-const mtlsTokenType = new MtlsCertificateBoundTokenType(
-  async (token) => await jwksAuthority.verify(token),
-  "x-ssl-client-cert"
-);
 
 const tlsClientAuthMethod = new TlsClientAuthMethod({
   certHeaderName: "x-ssl-client-cert",
@@ -56,6 +49,10 @@ const tlsClientAuthMethod = new TlsClientAuthMethod({
   },
 });
 
+const certificateBoundTokenType = tlsClientAuthMethod.createCertificateBoundTokenType(
+  async (token) => await jwksAuthority.verify(token)
+);
+
 // OAuth2 Flow
 export const clientFlow = new HonoClientCredentialsFlowBuilder({
   securitySchemeName: "clientCredentialsMtls",
@@ -70,7 +67,7 @@ export const clientFlow = new HonoClientCredentialsFlowBuilder({
   .addClientAuthenticationMethod(tlsClientAuthMethod)
 
   // Cleanly delegate token validation responsibility to your class instance
-  .setTokenType(mtlsTokenType)
+  .setTokenType(certificateBoundTokenType)
 
   // Handle validation inside your client retriever
   .getClient(async ({ clientId, clientSecret, scope }) => {
@@ -85,7 +82,7 @@ export const clientFlow = new HonoClientCredentialsFlowBuilder({
     }
 
     const incomingPem = clientSecret; // This holds our cert string from extractClientCredentials
-    const incomingThumbprint = await mtlsTokenType.calculateX5tS256(incomingPem);
+    const incomingThumbprint = await certificateBoundTokenType.calculateX5tS256(incomingPem);
 
     // 3. Cryptographically validate the incoming cert matches your target record.
     // Depending on your setup, you might compare standard SHA-256 thumbprints
@@ -125,7 +122,7 @@ export const clientFlow = new HonoClientCredentialsFlowBuilder({
       : [];
 
     // Bake the 'cnf' thumbprint claim directly into the token structure
-    const claims = mtlsTokenType.addThumbprintToCnfClaim(
+    const claims = certificateBoundTokenType.addThumbprintToCnfClaim(
       {
         sub: client.id,
         scope: accessScope.join(" "),
