@@ -1,4 +1,4 @@
-import { MtlsClientAuthMethod } from "./mtls-client-auth-method";
+import { TlsClientAuthMethod } from "./tls_client_auth";
 import type {
   JwtDecode,
   JwtPayload,
@@ -142,8 +142,8 @@ export class MtlsTokenType implements TokenType {
    * Creates a new instance of the mTLS client authentication method using the configured certificate header name.
    * @returns An instance of the mTLS client authentication method.
    */
-  createClientAuthMethod(): MtlsClientAuthMethod {
-    return new MtlsClientAuthMethod(this.certHeaderName);
+  createClientAuthMethod(): TlsClientAuthMethod {
+    return new TlsClientAuthMethod({ certHeaderName: this.certHeaderName });
   }
 
   /**

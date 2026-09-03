@@ -13,8 +13,8 @@ To make your @saurbit/oauth2 flow work, the proxy must be configured to do two t
    1. Enable Mutual TLS: Set client verification to optional/required so the handshake asks for the client cert.
    2. Sanitize and Inject the Header: Strip any incoming x-ssl-client-cert headers from the open internet (to prevent spoofing attacks) and overwrite it with the verified PEM string before routing the request downstream to your application.
  */
-import { findClientById } from "../data";
-import { MtlsTokenType, MtlsTokenTypeValidationResponse } from "./mtls-token-type";
+import { findClientById, findClientBySubjectDnAndId } from "../data";
+import { MtlsTokenType, MtlsTokenTypeValidationResponse } from "./mtls_token_type";
 import { HonoClientCredentialsFlowBuilder } from "@saurbit/hono-oauth2";
 import { StrategyInsufficientScopeError, StrategyInternalError } from "@saurbit/oauth2";
 import { createInMemoryKeyStore, JoseJwksAuthority } from "@saurbit/oauth2-jwt";
@@ -46,7 +46,19 @@ export const clientFlow = new HonoClientCredentialsFlowBuilder({
   accessTokenLifetime: 600, // 10 minutes in seconds
 })
   // Register your custom mTLS authenticator
-  .addClientAuthenticationMethod(mtlsTokenType.createClientAuthMethod())
+  .addClientAuthenticationMethod(
+    mtlsTokenType.createClientAuthMethod().validateClientSubject(async (clientId, headers) => {
+      // Implement your client certificate validation logic here
+      // For example, you might check the certificate against a database record
+      // or perform cryptographic verification.
+      const { certDn, certExpire } = headers;
+      if (!certDn) return false;
+      const client = await findClientBySubjectDnAndId(certDn ?? "", clientId);
+      if (!client) return false;
+      if (certExpire && Date.now() > new Date(certExpire).getTime()) return false;
+      return true; // Return true if the certificate is valid, false otherwise
+    })
+  )
 
   // Cleanly delegate token validation responsibility to your class instance
   .setTokenType(mtlsTokenType)

@@ -1,7 +1,7 @@
 /**
  * @module
  *
- * Implements the `tls_client_auth` (mTLS) client authentication method, where the
+ * Implements the `self_signed_tls_client_auth` (mTLS) client authentication method, where the
  * client authenticates using a client certificate over a mutually TLS connection.
  * The client certificate is sent in the request headers, typically forwarded by a reverse proxy.
  *
@@ -21,9 +21,10 @@ import type {
  *
  * @see https://datatracker.ietf.org/doc/html/rfc8705
  */
-export class MtlsClientAuthMethod implements ClientAuthMethod {
+export class TlsClientAuthMethod implements ClientAuthMethod {
   // RFC 8705 official registered name
-  readonly method: TokenEndpointAuthMethod = "tls_client_auth" as TokenEndpointAuthMethod;
+  readonly method: TokenEndpointAuthMethod =
+    "self_signed_tls_client_auth" as TokenEndpointAuthMethod;
 
   // mTLS relies on private key possession, not a symmetric client secret
   // But we still need to extract the client certificate as a secret equivalent for validation.

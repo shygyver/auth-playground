@@ -72,6 +72,8 @@ http {
             proxy_set_header X-SSL-Client-Verify $ssl_client_verify; # Returns "SUCCESS", "FAILED", or "NONE"
             proxy_set_header X-SSL-Client-DN     $ssl_client_s_dn;   # Subject Distinguished Name
             proxy_set_header X-SSL-Client-Cert   $ssl_client_escaped_cert; # Safe URL-encoded certificate string
+            proxy_set_header X-SSL-Client-SAN    ""; # Subject Alternative Name(s) from the client certificate
+            proxy_set_header X-SSL-Client-Expire $ssl_client_v_end; # Certificate expiration date
         }
     }
 }

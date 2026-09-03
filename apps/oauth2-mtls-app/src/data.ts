@@ -4,6 +4,8 @@ export interface ClientData {
   allowedScopes: string[];
   grantTypes: string[];
   redirectUris: string[];
+  subjectDn?: string;
+  registeredCertificate?: string;
   [key: string]: unknown;
 }
 
@@ -47,6 +49,7 @@ const clients: ClientData[] = [
     allowedScopes: ["content:read", "content:write"],
     grantTypes: ["authorization_code", "refresh_token", "client_credentials"],
     redirectUris: ["http://localhost:3000/callback"],
+    subjectDn: "O=DevTeam,CN=test-developer-client",
     registeredCertificate: "h09UV0f9_7N34ujf5jpjdeQptjIJF2OCadewXoeDiYA",
   },
 ];
@@ -69,6 +72,15 @@ const sessionStorage: Map<string, SessionData> = new Map();
 
 export async function findClientById(clientId: string): Promise<ClientData | undefined> {
   return Promise.resolve(clients.find((client) => client.clientId === clientId));
+}
+
+export async function findClientBySubjectDnAndId(
+  subjectDn: string,
+  clientId: string
+): Promise<ClientData | undefined> {
+  return Promise.resolve(
+    clients.find((client) => client.subjectDn === subjectDn && client.clientId === clientId)
+  );
 }
 
 export async function findUserById(id: string): Promise<UserData | undefined> {
