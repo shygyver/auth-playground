@@ -126,6 +126,13 @@ export class MtlsCertificateBoundTokenType implements TokenType {
     return claims;
   }
 
+  public async applyBinding(claims: JwtPayload, pemOrThumbprint: string): Promise<JwtPayload> {
+    const { x5tS256 } = pemOrThumbprint.includes("-----BEGIN CERTIFICATE-----")
+      ? await this.computeThumbprint(pemOrThumbprint)
+      : { x5tS256: pemOrThumbprint };
+    return this.addThumbprintToCnfClaim(claims, x5tS256);
+  }
+
   /**
    * Calculates the lowercase hexadecimal SHA-256 thumbprint of a PEM-encoded client certificate.
    * This method could be useful for other verification purposes.
@@ -151,6 +158,11 @@ export class MtlsCertificateBoundTokenType implements TokenType {
     const hashBuffer = await this.pemToHashBuffer(pem);
     // Convert the resulting ArrayBuffer to a base64url encoded string without padding
     return this.bufferToBase64Url(hashBuffer);
+  }
+
+  public async computeThumbprint(pem: string): Promise<{ x5tS256: string }> {
+    const x5tS256 = await this.calculateX5tS256(pem);
+    return { x5tS256 };
   }
 
   /** Common WebCrypto core processor */

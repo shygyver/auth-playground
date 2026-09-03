@@ -82,7 +82,8 @@ export const clientFlow = new HonoClientCredentialsFlowBuilder({
     }
 
     const incomingPem = clientSecret; // This holds our cert string from extractClientCredentials
-    const incomingThumbprint = await certificateBoundTokenType.calculateX5tS256(incomingPem);
+    const { x5tS256: incomingThumbprint } =
+      await certificateBoundTokenType.computeThumbprint(incomingPem);
 
     // 3. Cryptographically validate the incoming cert matches your target record.
     // Depending on your setup, you might compare standard SHA-256 thumbprints
@@ -122,7 +123,7 @@ export const clientFlow = new HonoClientCredentialsFlowBuilder({
       : [];
 
     // Bake the 'cnf' thumbprint claim directly into the token structure
-    const claims = certificateBoundTokenType.addThumbprintToCnfClaim(
+    const claims = await certificateBoundTokenType.applyBinding(
       {
         sub: client.id,
         scope: accessScope.join(" "),
