@@ -26,6 +26,7 @@ export interface TlsClientAuthOptions {
   certDnHeaderName?: string;
   certSanHeaderName?: string;
   certExpireHeaderName?: string;
+  additionalHeadersNames?: string[];
   validateClientSubject?: TlsClientAuthHandler;
 }
 
@@ -35,6 +36,7 @@ export interface TlsClientAuthHeadersValues {
   certDn?: string;
   certSan?: string;
   certExpire?: string;
+  additionalHeaders?: Record<string, string>;
 }
 
 /**
@@ -74,6 +76,7 @@ export class TlsClientAuthMethod implements ClientAuthMethod {
   #certDnHeaderName: string;
   #certSanHeaderName: string;
   #certExpireHeaderName: string;
+  #additionalHeadersNames: string[];
 
   #handler: (clientId: string, headers: TlsClientAuthHeadersValues) => boolean | Promise<boolean>;
 
@@ -92,6 +95,7 @@ export class TlsClientAuthMethod implements ClientAuthMethod {
     this.#certDnHeaderName = options.certDnHeaderName ?? "x-ssl-client-dn";
     this.#certSanHeaderName = options.certSanHeaderName ?? "x-ssl-client-san";
     this.#certExpireHeaderName = options.certExpireHeaderName ?? "x-ssl-client-expire";
+    this.#additionalHeadersNames = options.additionalHeadersNames ?? [];
 
     this.#handler = options.validateClientSubject ?? (() => Promise.resolve(false));
   }
@@ -137,8 +141,15 @@ export class TlsClientAuthMethod implements ClientAuthMethod {
     const clientCertDn = request.headers.get(this.#certDnHeaderName);
     const clientCertSan = request.headers.get(this.#certSanHeaderName);
     const clientCertExpire = request.headers.get(this.#certExpireHeaderName);
+    const additionalHeaders: Record<string, string> = {};
     if (!clientCertPem || clientCertVerify !== "SUCCESS") {
       return { hasAuthMethod: false };
+    }
+    for (const headerName of this.#additionalHeadersNames) {
+      const headerValue = request.headers.get(headerName);
+      if (headerValue) {
+        additionalHeaders[headerName] = headerValue;
+      }
     }
 
     try {
@@ -167,6 +178,7 @@ export class TlsClientAuthMethod implements ClientAuthMethod {
         certDn: clientCertDn ?? undefined,
         certSan: clientCertSan ?? undefined,
         certExpire: clientCertExpire ?? undefined,
+        additionalHeaders,
       });
       if (!isValidClient) {
         return { hasAuthMethod: false };

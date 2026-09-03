@@ -21,7 +21,7 @@ import type {
  *
  * @see https://datatracker.ietf.org/doc/html/rfc8705
  */
-export class TlsClientAuthMethod implements ClientAuthMethod {
+export class SelfSignedTlsClientAuthMethod implements ClientAuthMethod {
   // RFC 8705 official registered name
   readonly method: TokenEndpointAuthMethod =
     "self_signed_tls_client_auth" as TokenEndpointAuthMethod;
