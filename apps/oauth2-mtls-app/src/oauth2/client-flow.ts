@@ -34,8 +34,8 @@ export const jwksAuthority = new JoseJwksAuthority(jwksStore, 8.64e6); // 100-da
 
 const tlsClientAuthMethod = new TlsClientAuthMethod({
   certHeaderName: "x-ssl-client-cert",
-  certDnHeaderName: "x-ssl-client-cert-dn",
-  certExpireHeaderName: "x-ssl-client-cert-expire",
+  certDnHeaderName: "x-ssl-client-dn",
+  certExpireHeaderName: "x-ssl-client-expire",
   validateClientSubject: async (clientId, headers) => {
     // Implement your client certificate validation logic here
     // For example, you might check the certificate against a database record
