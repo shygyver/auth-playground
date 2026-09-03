@@ -1,12 +1,12 @@
-import { TlsClientAuthMethod } from "./tls_client_auth";
-import type {
-  JwtDecode,
-  JwtPayload,
-  TokenType,
-  TokenTypeValidationResponse,
+// tls_client_certificate_bound_access_tokens
+import {
+  type JwtDecode,
+  type JwtPayload,
+  type TokenType,
+  type TokenTypeValidationResponse,
 } from "@saurbit/oauth2";
 
-export interface MtlsTokenTypeValidationResponse extends TokenTypeValidationResponse {
+export interface CertificateBoundValidationResponse extends TokenTypeValidationResponse {
   data?: {
     mtlsPayload: JwtPayload;
     mtlsThumbprint?: string;
@@ -21,12 +21,14 @@ export interface MtlsTokenTypeValidationResponse extends TokenTypeValidationResp
  *
  * @see https://datatracker.ietf.org/doc/html/rfc8705
  */
-export class MtlsTokenType implements TokenType {
-  // RFC 8705 mandates that mTLS-bound access tokens use the "Bearer" prefix
+export class MtlsCertificateBoundTokenType implements TokenType {
+  /**
+   * The prefix used in the `Authorization` header for mTLS-bound access tokens.
+   */
   readonly prefix = "Bearer";
 
   /**
-   * Creates a new `MtlsTokenType` instance.
+   * Creates a new `MtlsCertificateBoundTokenType` instance.
    *
    * @param decodeTokenPayload - Callback to decode/verify your JWT token payload.
    * @param certHeaderName - The HTTP header name where the client certificate is expected (default: "x-ssl-client-cert").
@@ -39,33 +41,19 @@ export class MtlsTokenType implements TokenType {
   ) {}
 
   /**
-   * Validates the mTLS client certificate on an incoming token endpoint request.
-   * Called before client credentials are verified.
-   *
-   * @param req - The incoming token endpoint HTTP request.
-   * @returns A validation response indicating whether the mTLS client certificate is present.
-   */
-  async isValidTokenRequest(request: Request): Promise<TokenTypeValidationResponse> {
-    const clientCertPem = request.headers.get(this.certHeaderName);
-
-    if (!clientCertPem) {
-      return {
-        isValid: false,
-        message: "Mutual TLS client certificate missing from token request header.",
-      };
-    }
-
-    return { isValid: true };
-  }
-
-  /**
    * Validates the mTLS client certificate on an incoming protected resource request.
    *
    * @param request - The incoming HTTP request.
    * @param token - The mTLS-bound access token extracted from the `Authorization` header.
    * @returns A validation response indicating whether the proof and token are valid.
    */
-  async isValid(request: Request, token: string): Promise<MtlsTokenTypeValidationResponse> {
+  async isValid(request: Request, token: string): Promise<CertificateBoundValidationResponse> {
+    if (!token) {
+      return {
+        isValid: false,
+        message: "Access token is missing.",
+      };
+    }
     try {
       // Extract the client certificate from the current request
       const currentCertPem = request.headers.get(this.certHeaderName);
@@ -136,14 +124,6 @@ export class MtlsTokenType implements TokenType {
     cnf["x5t#S256"] = tmpThumbprint;
     claims.cnf = cnf;
     return claims;
-  }
-
-  /**
-   * Creates a new instance of the mTLS client authentication method using the configured certificate header name.
-   * @returns An instance of the mTLS client authentication method.
-   */
-  createClientAuthMethod(): TlsClientAuthMethod {
-    return new TlsClientAuthMethod({ certHeaderName: this.certHeaderName });
   }
 
   /**

@@ -14,7 +14,11 @@ To make your @saurbit/oauth2 flow work, the proxy must be configured to do two t
    2. Sanitize and Inject the Header: Strip any incoming x-ssl-client-cert headers from the open internet (to prevent spoofing attacks) and overwrite it with the verified PEM string before routing the request downstream to your application.
  */
 import { findClientById, findClientBySubjectDnAndId } from "../data";
-import { MtlsTokenType, MtlsTokenTypeValidationResponse } from "./mtls_token_type";
+import {
+  MtlsCertificateBoundTokenType,
+  CertificateBoundValidationResponse,
+} from "./mtls_certificate_bound_token_type";
+import { TlsClientAuthMethod } from "./tls_client_auth";
 import { HonoClientCredentialsFlowBuilder } from "@saurbit/hono-oauth2";
 import { StrategyInsufficientScopeError, StrategyInternalError } from "@saurbit/oauth2";
 import { createInMemoryKeyStore, JoseJwksAuthority } from "@saurbit/oauth2-jwt";
@@ -30,10 +34,27 @@ const jwksStore = createInMemoryKeyStore();
 
 // Signs JWTs and exposes the public JWKS endpoint
 export const jwksAuthority = new JoseJwksAuthority(jwksStore, 8.64e6); // 100-day key lifetime
-const mtlsTokenType = new MtlsTokenType(
+const mtlsTokenType = new MtlsCertificateBoundTokenType(
   async (token) => await jwksAuthority.verify(token),
   "x-ssl-client-cert"
 );
+
+const tlsClientAuthMethod = new TlsClientAuthMethod({
+  certHeaderName: "x-ssl-client-cert",
+  certDnHeaderName: "x-ssl-client-cert-dn",
+  certExpireHeaderName: "x-ssl-client-cert-expire",
+  validateClientSubject: async (clientId, headers) => {
+    // Implement your client certificate validation logic here
+    // For example, you might check the certificate against a database record
+    // or perform cryptographic verification.
+    const { certDn, certExpire } = headers;
+    if (!certDn) return false;
+    const client = await findClientBySubjectDnAndId(certDn ?? "", clientId);
+    if (!client) return false;
+    if (certExpire && Date.now() > new Date(certExpire).getTime()) return false;
+    return true; // Return true if the certificate is valid, false otherwise
+  },
+});
 
 // OAuth2 Flow
 export const clientFlow = new HonoClientCredentialsFlowBuilder({
@@ -46,19 +67,7 @@ export const clientFlow = new HonoClientCredentialsFlowBuilder({
   accessTokenLifetime: 600, // 10 minutes in seconds
 })
   // Register your custom mTLS authenticator
-  .addClientAuthenticationMethod(
-    mtlsTokenType.createClientAuthMethod().validateClientSubject(async (clientId, headers) => {
-      // Implement your client certificate validation logic here
-      // For example, you might check the certificate against a database record
-      // or perform cryptographic verification.
-      const { certDn, certExpire } = headers;
-      if (!certDn) return false;
-      const client = await findClientBySubjectDnAndId(certDn ?? "", clientId);
-      if (!client) return false;
-      if (certExpire && Date.now() > new Date(certExpire).getTime()) return false;
-      return true; // Return true if the certificate is valid, false otherwise
-    })
-  )
+  .addClientAuthenticationMethod(tlsClientAuthMethod)
 
   // Cleanly delegate token validation responsibility to your class instance
   .setTokenType(mtlsTokenType)
@@ -133,7 +142,7 @@ export const clientFlow = new HonoClientCredentialsFlowBuilder({
   .tokenVerifier(async (_ctxt, { token: _token, tokenTypeValidation }) => {
     try {
       // 1. Safely extract the pre-verified payload from your custom type
-      const validationResult = tokenTypeValidation as MtlsTokenTypeValidationResponse;
+      const validationResult = tokenTypeValidation as CertificateBoundValidationResponse;
       const payload = validationResult?.data?.mtlsPayload;
 
       // 2. Enforce basic presence of required identity fields
