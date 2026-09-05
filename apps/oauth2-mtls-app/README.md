@@ -61,6 +61,12 @@ http {
 
         location / {
             proxy_pass http://oauth2-mtls-app:3000;
+
+            # If a cert was provided, check NGINX's built-in validation (e.g., expiration)
+            # NGINX automatically sets $ssl_client_verify to 'SUCCESS', 'FAILED:reason', or 'NONE'
+            if ($ssl_client_verify ~ "^FAILED:certificate\s+has\s+expired$") {
+                return 401 "{\"error\": \"invalid_client\", \"error_description\": \"Client certificate expired\"}";
+            }
             
             # Forward connection context
             proxy_set_header Host $host;
