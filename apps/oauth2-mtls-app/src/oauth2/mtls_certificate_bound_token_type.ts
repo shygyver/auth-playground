@@ -1,10 +1,5 @@
 // tls_client_certificate_bound_access_tokens
-import {
-  type JwtDecode,
-  type JwtPayload,
-  type TokenType,
-  type TokenTypeValidationResponse,
-} from "@saurbit/oauth2";
+import { type JwtPayload, type TokenType, type TokenTypeValidationResponse } from "@saurbit/oauth2";
 
 export interface CertificateBoundValidationResponse extends TokenTypeValidationResponse {
   data?: {
@@ -12,6 +7,10 @@ export interface CertificateBoundValidationResponse extends TokenTypeValidationR
     mtlsThumbprint?: string;
   };
 }
+
+export type MtlsJwtPayload = JwtPayload & { cnf?: { "x5t#S256"?: string } };
+
+export type MtlsJwtDecode = (jwt: string) => MtlsJwtPayload | Promise<MtlsJwtPayload>;
 
 /**
  * {@link TokenType} implementation for the mTLS (Mutual TLS) token scheme.
@@ -35,7 +34,7 @@ export class MtlsCertificateBoundTokenType implements TokenType {
    */
   constructor(
     // Callback to decode/verify your JWT token payload
-    private readonly decodeTokenPayload: JwtDecode,
+    private readonly decodeTokenPayload: MtlsJwtDecode,
     // Customize based on your reverse proxy configuration
     private readonly certHeaderName: string = "x-ssl-client-cert"
   ) {}

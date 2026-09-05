@@ -11,6 +11,7 @@
  * @see https://datatracker.ietf.org/doc/html/rfc8705
  */
 import { MtlsCertificateBoundTokenType } from "./mtls_certificate_bound_token_type";
+import { TlsClientAuthHeadersValues } from "./tls_commons";
 import type {
   ClientAuthMethod,
   ClientAuthMethodResponse,
@@ -30,15 +31,6 @@ export interface TlsClientAuthOptions {
   certExpireHeaderName?: string;
   additionalHeadersNames?: string[];
   validateClientSubject?: TlsClientAuthHandler;
-}
-
-export interface TlsClientAuthHeadersValues {
-  cert: string;
-  certVerify: string;
-  certDn?: string;
-  certSan?: string;
-  certExpire?: string;
-  additionalHeaders?: Record<string, string>;
 }
 
 /**

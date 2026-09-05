@@ -10,11 +10,43 @@
  *
  * @see https://datatracker.ietf.org/doc/html/rfc8705
  */
+import { TlsClientAuthHeadersValues } from "./tls_commons";
 import type {
   ClientAuthMethod,
   ClientAuthMethodResponse,
   TokenEndpointAuthMethod,
 } from "@saurbit/oauth2";
+
+/**
+ * JSON Web Key Set object as defined in RFC 7517.
+ * The best practice would be to retrieve this JWKS from a trusted endpoint and cache it for subsequent validations.
+ */
+export interface TrustedJwks {
+  keys: {
+    alg?: string;
+    /**
+     * The X.509 certificate chain for the key, represented as an array of base64-encoded DER certificates.
+     * The framework parses that x5c string, converts it back into a public key object or certificate,
+     * and matches it against the incoming TLS certificate.
+     */
+    x5c?: string[];
+    [propName: string]: unknown;
+  }[];
+}
+
+export interface TrustedJwksHandler {
+  (clientId: string, headers: TlsClientAuthHeadersValues): TrustedJwks | Promise<TrustedJwks>;
+}
+
+export interface SelfSignedTlsClientAuthOptions {
+  certHeaderName?: string;
+  certVerifyHeaderName?: string;
+  certDnHeaderName?: string;
+  certSanHeaderName?: string;
+  certExpireHeaderName?: string;
+  additionalHeadersNames?: string[];
+  getJwks?: TrustedJwksHandler;
+}
 
 /**
  * mTLS client authentication method as defined in RFC 8705.
@@ -30,10 +62,24 @@ export class SelfSignedTlsClientAuthMethod implements ClientAuthMethod {
   // But we still need to extract the client certificate as a secret equivalent for validation.
   readonly secretIsOptional = false;
 
-  constructor(
-    // Customize the header key based on your reverse proxy config
-    private readonly certHeaderName: string = "x-ssl-client-cert"
-  ) {}
+  #certHeaderName: string;
+  #certVerifyHeaderName: string;
+  #certDnHeaderName: string;
+  #certSanHeaderName: string;
+  #certExpireHeaderName: string;
+  #additionalHeadersNames: string[];
+
+  #getJwks?: TrustedJwksHandler;
+
+  constructor(options: SelfSignedTlsClientAuthOptions = {}) {
+    this.#certHeaderName = options.certHeaderName ?? "x-ssl-client-cert";
+    this.#certVerifyHeaderName = options.certVerifyHeaderName ?? "x-ssl-client-verify";
+    this.#certDnHeaderName = options.certDnHeaderName ?? "x-ssl-client-dn";
+    this.#certSanHeaderName = options.certSanHeaderName ?? "x-ssl-client-san";
+    this.#certExpireHeaderName = options.certExpireHeaderName ?? "x-ssl-client-expire";
+    this.#additionalHeadersNames = options.additionalHeadersNames ?? [];
+    this.#getJwks = options.getJwks;
+  }
 
   /**
    * Extracts and verifies the client certificate from the request headers.
@@ -55,9 +101,20 @@ export class SelfSignedTlsClientAuthMethod implements ClientAuthMethod {
     }
 
     // Look for the TLS client certificate forwarded by your reverse proxy
-    const clientCertPem = request.headers.get(this.certHeaderName);
-    if (!clientCertPem) {
+    const clientCertPem = request.headers.get(this.#certHeaderName);
+    const clientCertVerify = request.headers.get(this.#certVerifyHeaderName);
+    const clientCertDn = request.headers.get(this.#certDnHeaderName);
+    const clientCertSan = request.headers.get(this.#certSanHeaderName);
+    const clientCertExpire = request.headers.get(this.#certExpireHeaderName);
+    const additionalHeaders: Record<string, string> = {};
+    if (!clientCertPem || clientCertVerify == "NONE" || clientCertVerify == null) {
       return { hasAuthMethod: false };
+    }
+    for (const headerName of this.#additionalHeadersNames) {
+      const headerValue = request.headers.get(headerName);
+      if (headerValue) {
+        additionalHeaders[headerName] = headerValue;
+      }
     }
 
     try {
@@ -77,9 +134,42 @@ export class SelfSignedTlsClientAuthMethod implements ClientAuthMethod {
         return { hasAuthMethod: false };
       }
 
-      // TODO: Implement proper client certificate validation here.
-      // This may include checking the certificate's signature, expiration,
-      // and matching it against the registered client information (e.g. array of allowed certificates/thumbprints).
+      const rawIncomingPem = decodeURIComponent(clientCertPem);
+      const clientCertBase64 = rawIncomingPem
+        .replace(/-----\s*BEGIN ?[^-]*-----\s*/g, "")
+        .replace(/-----\s*END ?[^-]*-----\s*/g, "")
+        .replace(/[\r\n\s]/g, ""); // Removes all newlines and spaces
+
+      // Fetch JWKS from trusted URI.
+      const trustedJwks = await this.#getJwks?.(clientId, {
+        cert: clientCertPem,
+        certVerify: clientCertVerify,
+        certDn: clientCertDn ?? undefined,
+        certSan: clientCertSan ?? undefined,
+        certExpire: clientCertExpire ?? undefined,
+        additionalHeaders,
+      });
+
+      if (!trustedJwks) {
+        return { hasAuthMethod: false };
+      }
+
+      // Scan the JWKS for a matching certificate string.
+      let isAuthorized = false;
+      for (const key of trustedJwks.keys) {
+        if (key.x5c && key.x5c.length > 0) {
+          const jwksCertBase64 = key.x5c[0].replace(/[\r\n\s]/g, ""); // Ensure no white spaces
+
+          if (clientCertBase64 === jwksCertBase64) {
+            isAuthorized = true;
+            break;
+          }
+        }
+      }
+
+      if (!isAuthorized) {
+        return { hasAuthMethod: false };
+      }
 
       // Return the extracted credentials.
       // Instead of client_secret, we forward the client certificate payload
