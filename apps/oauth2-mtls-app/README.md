@@ -153,3 +153,73 @@ services:
     environment:
       - NODE_ENV=development
 ```
+
+## Self-signed Certificates
+
+To generate self-signed certificates for testing purposes, you can use the following commands:
+```bash
+# 1. Create the Client Private Key
+openssl genrsa -out client.key 2048
+
+# 2. Create and Sign the Self-Signed Client Certificate in one step
+openssl req -new -x509 -days 365 \
+  -key client.key \
+  -out client.crt \
+  -subj "/CN=test-client-id"
+```
+
+The client should use the generated `client.crt` during the TLS handshake and also extract the public key from client.crt, formats it as a JWK, and publishes it to its JWKS endpoint.
+
+Here is a quick NodeJS script to convert the client certificate to a JWK:
+
+```js
+import * as fs from 'node:fs';
+import * as jose from 'jose';
+
+async function convertCertToJwk(certPath, algorithm = 'RS256') {
+  try {
+    // 1. Read the raw client certificate PEM file
+    const rawPem = fs.readFileSync(certPath, 'utf8');
+
+    // 2. Clean the PEM string to create the raw base64 string for the x5c array
+    const cleanB64 = rawPem
+      .replace(/-----\s*BEGIN ?[^-]*-----\s*/g, "")
+      .replace(/-----\s*END ?[^-]*-----\s*/g, "")
+      .replace(/[\r\n\s]/g, "");
+
+    // 3. Import the certificate as a native CryptoKey object
+    const publicKey = await jose.importX509(rawPem, algorithm);
+
+    // 4. Export the CryptoKey object into standard JWK properties
+    const jwk = await jose.exportJWK(publicKey);
+
+    // 5. Structure the final JWK matching RFC 7517 / RFC 8705 specifications
+    const completeJwk = {
+      kty: jwk.kty,
+      alg: algorithm,
+      use: 'sig',
+      n: jwk.n, // Present if RSA
+      e: jwk.e, // Present if RSA
+      x: jwk.x, // Present if EC / OKP
+      y: jwk.y, // Present if EC
+      crv: jwk.crv, // Present if EC / OKP
+      x5c: [cleanB64] // The critical certificate array for mTLS validation
+    };
+
+    console.log(JSON.stringify(completeJwk, null, 2));
+  } catch (error) {
+    console.error('Failed to convert certificate:', error.message);
+  }
+}
+
+// Execute the conversion (Change path and algorithm as needed)
+convertCertToJwk('./client.crt', 'RS256');
+```
+
+In your NGINX config, you set:
+
+```conf
+ssl_verify_client optional_no_ca;
+```
+
+This tells NGINX to **not** validate the certificates against a CA.
