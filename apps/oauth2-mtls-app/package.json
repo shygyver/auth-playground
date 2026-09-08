@@ -6,10 +6,10 @@
     "dev": "bun run --hot src/index.ts"
   },
   "dependencies": {
-    "@saurbit/hono-oauth2": "^0.1.9",
-    "@saurbit/oauth2": "^0.1.14",
-    "@saurbit/oauth2-jwt": "^0.1.10",
-    "hono": "^4.13.5"
+    "@saurbit/hono-oauth2": "^0.1.10",
+    "@saurbit/oauth2": "^0.1.15",
+    "@saurbit/oauth2-jwt": "^0.1.11",
+    "hono": "^4.13.7"
   },
   "devDependencies": {
     "@types/bun": "^1.4.0"

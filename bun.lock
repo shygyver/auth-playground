@@ -18,10 +18,10 @@
     "apps/oauth2-mtls-app": {
       "name": "oauth2-mtls-app",
       "dependencies": {
-        "@saurbit/hono-oauth2": "^0.1.9",
-        "@saurbit/oauth2": "^0.1.14",
-        "@saurbit/oauth2-jwt": "^0.1.10",
-        "hono": "^4.13.5",
+        "@saurbit/hono-oauth2": "^0.1.10",
+        "@saurbit/oauth2": "^0.1.15",
+        "@saurbit/oauth2-jwt": "^0.1.11",
+        "hono": "^4.13.7",
       },
       "devDependencies": {
         "@types/bun": "^1.4.0",
@@ -31,11 +31,11 @@
       "name": "oidc-app",
       "dependencies": {
         "@hono/standard-validator": "^0.2.2",
-        "@saurbit/hono-oauth2": "^0.1.3",
-        "@saurbit/oauth2": "^0.1.4",
-        "@saurbit/oauth2-jwt": "^0.1.3",
+        "@saurbit/hono-oauth2": "^0.1.10",
+        "@saurbit/oauth2": "^0.1.15",
+        "@saurbit/oauth2-jwt": "^0.1.11",
         "@scalar/hono-api-reference": "^0.10.7",
-        "hono": "^4.12.16",
+        "hono": "^4.13.7",
         "hono-openapi": "^1.3.0",
       },
       "devDependencies": {
@@ -46,11 +46,11 @@
       "name": "oidc-consent-app",
       "dependencies": {
         "@hono/standard-validator": "^0.2.2",
-        "@saurbit/hono-oauth2": "^0.1.3",
-        "@saurbit/oauth2": "^0.1.4",
-        "@saurbit/oauth2-jwt": "^0.1.3",
+        "@saurbit/hono-oauth2": "^0.1.10",
+        "@saurbit/oauth2": "^0.1.15",
+        "@saurbit/oauth2-jwt": "^0.1.11",
         "@scalar/hono-api-reference": "^0.10.7",
-        "hono": "^4.12.16",
+        "hono": "^4.13.7",
         "hono-openapi": "^1.3.0",
       },
       "devDependencies": {
@@ -61,11 +61,11 @@
       "name": "oidc-persistent-app",
       "dependencies": {
         "@hono/standard-validator": "^0.2.2",
-        "@saurbit/hono-oauth2": "^0.1.3",
-        "@saurbit/oauth2": "^0.1.4",
-        "@saurbit/oauth2-jwt": "^0.1.3",
+        "@saurbit/hono-oauth2": "^0.1.10",
+        "@saurbit/oauth2": "^0.1.15",
+        "@saurbit/oauth2-jwt": "^0.1.11",
         "@scalar/hono-api-reference": "^0.10.7",
-        "hono": "^4.12.16",
+        "hono": "^4.13.7",
         "hono-openapi": "^1.3.0",
         "pg": "^8.20.0",
       },
@@ -78,11 +78,11 @@
       "name": "oidc-refresh-app",
       "dependencies": {
         "@hono/standard-validator": "^0.2.2",
-        "@saurbit/hono-oauth2": "^0.1.3",
-        "@saurbit/oauth2": "^0.1.4",
-        "@saurbit/oauth2-jwt": "^0.1.3",
+        "@saurbit/hono-oauth2": "^0.1.10",
+        "@saurbit/oauth2": "^0.1.15",
+        "@saurbit/oauth2-jwt": "^0.1.11",
         "@scalar/hono-api-reference": "^0.10.13",
-        "hono": "^4.12.16",
+        "hono": "^4.13.7",
         "hono-openapi": "^1.3.0",
       },
       "devDependencies": {
@@ -121,11 +121,11 @@
 
     "@jridgewell/trace-mapping": ["@jridgewell/trace-mapping@0.3.31", "", { "dependencies": { "@jridgewell/resolve-uri": "^3.1.0", "@jridgewell/sourcemap-codec": "^1.4.14" } }, "sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw=="],
 
-    "@saurbit/hono-oauth2": ["@saurbit/hono-oauth2@0.1.9", "", { "peerDependencies": { "@saurbit/oauth2": "^0.1.14", "hono": "^4.13.5" } }, "sha512-LhqEh8KCUPgYgbWbrxtasQOwqbTuoMd7yl47xHjC2jzv9lw17P6oB4jpEt3NbAwmwnH91cqQO4lz9xT2YyFBLw=="],
+    "@saurbit/hono-oauth2": ["@saurbit/hono-oauth2@0.1.10", "", { "peerDependencies": { "@saurbit/oauth2": "^0.1.15", "hono": "^4.13.7" } }, "sha512-u/Pm5NMpIIEGyfaaa7s5XCPyjXxemxDmSWzRgSrFcLoGKQvLCDi+KiYGvOREfutjw6VetEj1fWxpH3/Np/enMQ=="],
 
-    "@saurbit/oauth2": ["@saurbit/oauth2@0.1.14", "", {}, "sha512-GWmBmCk9f5hIYIvzrnx4P0pnBgpXK95qKPYX0Fpbg+TWb/g+YdtBoxAjpVazdk75hpJA835OkbwzVn/2Qu1BKw=="],
+    "@saurbit/oauth2": ["@saurbit/oauth2@0.1.15", "", {}, "sha512-13uQeQ9nr2fZynhsdsgQlq3Iqtp4EK6szDNYzx2RwHASK77ifAV0GBt5sPskJuH4vsETVVmMBX0upemOO55D+g=="],
 
-    "@saurbit/oauth2-jwt": ["@saurbit/oauth2-jwt@0.1.10", "", { "dependencies": { "jose": "^6.2.10" }, "peerDependencies": { "@saurbit/oauth2": "^0.1.14" } }, "sha512-L4q+WMxu8CaLXqe+BBLGGU11cx2ZMSC8DUurM3w8WuKQLOcYSlcAHthcQGT/j0x4qgzY9ZlypTrUK6SzBH33jg=="],
+    "@saurbit/oauth2-jwt": ["@saurbit/oauth2-jwt@0.1.11", "", { "dependencies": { "jose": "^6.2.12" }, "peerDependencies": { "@saurbit/oauth2": "^0.1.15" } }, "sha512-11lpLFCi4pw5I4kG3OInQQdyqGTczjECeLM7W8vIpFL0ZEZnbLka3U2/NeCILlUfUdmAGskEeb+ocM57M9bBxg=="],
 
     "@scalar/client-side-rendering": ["@scalar/client-side-rendering@0.1.6", "", { "dependencies": { "@scalar/types": "0.9.5" } }, "sha512-ooc5RKyi83EvBuxB2N8H00ZE2CF4oKynuUToSCaoqxkjv+oJ6B3+OYsb0HVixznsyWhUDdtQZm4/xOb0kxBaaA=="],
 
@@ -197,7 +197,7 @@
 
     "get-east-asian-width": ["get-east-asian-width@1.5.0", "", {}, "sha512-CQ+bEO+Tva/qlmw24dCejulK5pMzVnUOFOijVogd3KQs07HnRIgp8TGipvCCRT06xeYEbpbgwaCxglFyiuIcmA=="],
 
-    "hono": ["hono@4.13.5", "", {}, "sha512-O6+/eCYRkzzzy0rPWwKLiGBR1nFuUPZynnwjxN1MBA62NNqbT0wQEzQyK2gSO5yDIDB336sXQleAhOHrzlYyKw=="],
+    "hono": ["hono@4.13.7", "", {}, "sha512-c8/gF9ac8Y78/agExVocyLevgR+JlpNB444Py0FSX8pJoPdYUfUzRcXtYEYGwt6l19qIlVZPN5Mfsw9jFShmQQ=="],
 
     "hono-openapi": ["hono-openapi@1.3.0", "", { "peerDependencies": { "@hono/standard-validator": "^0.2.0", "@standard-community/standard-json": "^0.3.5", "@standard-community/standard-openapi": "^0.2.9", "@types/json-schema": "^7.0.15", "hono": "^4.8.3", "openapi-types": "^12.1.3" }, "optionalPeers": ["@hono/standard-validator", "hono"] }, "sha512-xDvCWpWEIv0weEmnl3EjRQzqbHIO8LnfzMuYOCmbuyE5aes6aXxLg4vM3ybnoZD5TiTUkA6PuRQPJs3R7WRBig=="],
 
@@ -209,7 +209,7 @@
 
     "javascript-natural-sort": ["javascript-natural-sort@0.7.1", "", {}, "sha512-nO6jcEfZWQXDhOiBtG2KvKyEptz7RVbpGP4vTD2hLBdmNQSsCiicO2Ioinv6UI4y9ukqnBpy+XZ9H6uLNgJTlw=="],
 
-    "jose": ["jose@6.2.10", "", {}, "sha512-iiW7J9qRFlGxvCOIBDBDxFePQSn7ZMAnrYGhrrOo6siO/MIqwfyilLR27pkfDgUk+raLuzADS8A3S/KLBisc0g=="],
+    "jose": ["jose@6.2.12", "", {}, "sha512-9NiFmJEex0sy2Dk58j2UGBSHgUs2ypF9eZSu4L6vjOX3Dp96Sw1F3uL+H+D1sx02jZZdzUT0HgvCy59CuvXcWw=="],
 
     "js-tokens": ["js-tokens@4.0.0", "", {}, "sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ=="],
 
