@@ -16,6 +16,7 @@ import type {
   ClientAuthMethod,
   ClientAuthMethodResponse,
   JwtDecode,
+  OAuth2Client,
   TokenEndpointAuthMethod,
 } from "@saurbit/oauth2";
 
@@ -49,6 +50,7 @@ export interface TlsClientAuthOptions {
  *   certDnHeaderName: "x-ssl-client-dn",
  *   certSanHeaderName: "x-ssl-client-san",
  *   certExpireHeaderName: "x-ssl-client-expire",
+ *   additionalHeadersNames: ["x-ssl-client-extra-header"],
  * });
  *
  * tlsAuth.validateClientSubject(async (clientId, headers) => {
@@ -72,7 +74,16 @@ export class TlsClientAuthMethod implements ClientAuthMethod {
   #certExpireHeaderName: string;
   #additionalHeadersNames: string[];
 
-  #handler: (clientId: string, headers: TlsClientAuthHeadersValues) => boolean | Promise<boolean>;
+  #handler: (
+    clientId: string,
+    headers: TlsClientAuthHeadersValues,
+    clientData?: Partial<OAuth2Client> | undefined
+  ) => boolean | Promise<boolean>;
+
+  #getClientDataHandler?: (
+    clientId: string,
+    headers: TlsClientAuthHeadersValues
+  ) => Promise<Partial<OAuth2Client> | undefined> | Partial<OAuth2Client> | undefined;
 
   /**
    * Initializes a new instance of the TLS client authentication method.
@@ -104,9 +115,31 @@ export class TlsClientAuthMethod implements ClientAuthMethod {
    * @returns The current instance for method chaining.
    */
   validateClientSubject(
-    handler: (clientId: string, headers: TlsClientAuthHeadersValues) => boolean | Promise<boolean>
+    handler: (
+      clientId: string,
+      headers: TlsClientAuthHeadersValues,
+      clientData?: Partial<OAuth2Client> | undefined
+    ) => boolean | Promise<boolean>
   ): this {
     this.#handler = handler;
+    return this;
+  }
+
+  /**
+   * Optionally retrieves the client information based on the TLS client authentication headers.
+   *
+   * Particularly useful when the client information is needed for further processing after TLS client authentication.
+   *
+   * @param handler - An async function that returns the client information or `undefined`.
+   * @returns The current `TlsClientAuthMethod` instance for chaining.
+   */
+  getClientData(
+    handler: (
+      clientId: string,
+      headers: TlsClientAuthHeadersValues
+    ) => Promise<Partial<OAuth2Client> | undefined> | Partial<OAuth2Client> | undefined
+  ): this {
+    this.#getClientDataHandler = handler;
     return this;
   }
 
@@ -167,10 +200,8 @@ export class TlsClientAuthMethod implements ClientAuthMethod {
         return { hasAuthMethod: false };
       }
 
-      // Implement proper client certificate validation here.
-      // This may include checking the certificate's signature, expiration,
-      // and matching it against the registered client information (e.g. array of allowed certificates/thumbprints).
-      const isValidClient = await this.#handler(clientId, {
+      // Optionally retrieve client data based on the TLS client authentication headers
+      const clientData = await this.#getClientDataHandler?.(clientId, {
         cert: clientCertPem,
         certVerify: clientCertVerify,
         certDn: clientCertDn ?? undefined,
@@ -178,6 +209,22 @@ export class TlsClientAuthMethod implements ClientAuthMethod {
         certExpire: clientCertExpire ?? undefined,
         additionalHeaders,
       });
+
+      // Implement proper client certificate validation here.
+      // This may include checking the certificate's signature, expiration,
+      // and matching it against the registered client information (e.g. array of allowed certificates/thumbprints).
+      const isValidClient = await this.#handler(
+        clientId,
+        {
+          cert: clientCertPem,
+          certVerify: clientCertVerify,
+          certDn: clientCertDn ?? undefined,
+          certSan: clientCertSan ?? undefined,
+          certExpire: clientCertExpire ?? undefined,
+          additionalHeaders,
+        },
+        clientData ? { ...clientData } : undefined
+      );
       if (!isValidClient) {
         return { hasAuthMethod: false };
       }
@@ -191,6 +238,7 @@ export class TlsClientAuthMethod implements ClientAuthMethod {
         // Passing the certificate as the secret equivalent so your flow's
         // getClient() callback can validate it against the registered public key/cert.
         clientSecret: clientCertPem,
+        clientData,
       };
     } catch {
       return { hasAuthMethod: false };

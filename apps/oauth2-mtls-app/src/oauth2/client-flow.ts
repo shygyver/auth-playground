@@ -70,7 +70,7 @@ export const clientFlow = new HonoClientCredentialsFlowBuilder({
   .setTokenType(certificateBoundTokenType)
 
   // Handle validation inside your client retriever
-  .getClient(async ({ clientId, clientSecret, scope }) => {
+  .getClient(async ({ clientId, clientSecret, scope, clientAuthData }) => {
     // 1. Fetch client details from database
     const client = await findClientById(clientId);
     if (!client) return undefined;

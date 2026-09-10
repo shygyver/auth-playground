@@ -14,6 +14,7 @@ import { TlsClientAuthHeadersValues } from "./tls_commons";
 import type {
   ClientAuthMethod,
   ClientAuthMethodResponse,
+  OAuth2Client,
   TokenEndpointAuthMethod,
 } from "@saurbit/oauth2";
 
@@ -110,7 +111,11 @@ export interface TrustedJwks {
 }
 
 export interface TrustedJwksHandler {
-  (clientId: string, headers: TlsClientAuthHeadersValues): TrustedJwks | Promise<TrustedJwks>;
+  (
+    clientId: string,
+    headers: TlsClientAuthHeadersValues,
+    clientData?: Partial<OAuth2Client> | undefined
+  ): TrustedJwks | Promise<TrustedJwks>;
 }
 
 export interface SelfSignedTlsClientAuthOptions {
@@ -148,6 +153,11 @@ export class SelfSignedTlsClientAuthMethod implements ClientAuthMethod {
 
   #getJwks?: TrustedJwksHandler;
 
+  #getClientDataHandler?: (
+    clientId: string,
+    headers: TlsClientAuthHeadersValues
+  ) => Promise<Partial<OAuth2Client> | undefined> | Partial<OAuth2Client> | undefined;
+
   /**
    * The list of accepted asymmetric signing algorithms for self-signed TLS client authentication.
    * Defaults to `[RS256]` if no algorithms have been added via {@link SelfSignedTlsClientAuthMethod.addAlgorithm}.
@@ -179,6 +189,24 @@ export class SelfSignedTlsClientAuthMethod implements ClientAuthMethod {
       this.#algorithms.push(algo);
       this.#algorithms.sort();
     }
+    return this;
+  }
+
+  /**
+   * Optionally retrieves the client information based on the TLS client authentication headers.
+   *
+   * Particularly useful when the client information is needed for further processing after TLS client authentication.
+   *
+   * @param handler - An async function that returns the client information or `undefined`.
+   * @returns The current `SelfSignedTlsClientAuth` instance for chaining.
+   */
+  getClientData(
+    handler: (
+      clientId: string,
+      headers: TlsClientAuthHeadersValues
+    ) => Promise<Partial<OAuth2Client> | undefined> | Partial<OAuth2Client> | undefined
+  ): this {
+    this.#getClientDataHandler = handler;
     return this;
   }
 
@@ -241,8 +269,8 @@ export class SelfSignedTlsClientAuthMethod implements ClientAuthMethod {
         .replace(/-----\s*END ?[^-]*-----\s*/g, "")
         .replace(/[\r\n\s]/g, ""); // Removes all newlines and spaces
 
-      // Fetch JWKS from trusted URI.
-      const trustedJwks = await this.#getJwks?.(clientId, {
+      // Optionally retrieve client data based on the TLS client authentication headers
+      const clientData = await this.#getClientDataHandler?.(clientId, {
         cert: clientCertPem,
         certVerify: clientCertVerify,
         certDn: clientCertDn ?? undefined,
@@ -250,6 +278,20 @@ export class SelfSignedTlsClientAuthMethod implements ClientAuthMethod {
         certExpire: clientCertExpire ?? undefined,
         additionalHeaders,
       });
+
+      // Fetch JWKS from trusted URI.
+      const trustedJwks = await this.#getJwks?.(
+        clientId,
+        {
+          cert: clientCertPem,
+          certVerify: clientCertVerify,
+          certDn: clientCertDn ?? undefined,
+          certSan: clientCertSan ?? undefined,
+          certExpire: clientCertExpire ?? undefined,
+          additionalHeaders,
+        },
+        clientData ? { ...clientData } : undefined
+      );
 
       if (!trustedJwks) {
         return { hasAuthMethod: false };
@@ -369,6 +411,7 @@ export class SelfSignedTlsClientAuthMethod implements ClientAuthMethod {
         // Passing the certificate as the secret equivalent so your flow's
         // getClient() callback can validate it against the registered public key/cert.
         clientSecret: clientCertPem,
+        clientData,
       };
     } catch {
       return { hasAuthMethod: false };
