@@ -8,7 +8,7 @@
   "dependencies": {
     "@hono/standard-validator": "^0.2.2",
     "@saurbit/hono-oauth2": "^0.1.10",
-    "@saurbit/oauth2": "^0.1.15",
+    "@saurbit/oauth2": "^0.1.16",
     "@saurbit/oauth2-jwt": "^0.1.11",
     "@scalar/hono-api-reference": "^0.10.7",
     "hono": "^4.13.7",

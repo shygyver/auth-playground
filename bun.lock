@@ -19,7 +19,7 @@
       "name": "oauth2-mtls-app",
       "dependencies": {
         "@saurbit/hono-oauth2": "^0.1.10",
-        "@saurbit/oauth2": "^0.1.15",
+        "@saurbit/oauth2": "^0.1.16",
         "@saurbit/oauth2-jwt": "^0.1.11",
         "hono": "^4.13.7",
       },
@@ -32,7 +32,7 @@
       "dependencies": {
         "@hono/standard-validator": "^0.2.2",
         "@saurbit/hono-oauth2": "^0.1.10",
-        "@saurbit/oauth2": "^0.1.15",
+        "@saurbit/oauth2": "^0.1.16",
         "@saurbit/oauth2-jwt": "^0.1.11",
         "@scalar/hono-api-reference": "^0.10.7",
         "hono": "^4.13.7",
@@ -47,7 +47,7 @@
       "dependencies": {
         "@hono/standard-validator": "^0.2.2",
         "@saurbit/hono-oauth2": "^0.1.10",
-        "@saurbit/oauth2": "^0.1.15",
+        "@saurbit/oauth2": "^0.1.16",
         "@saurbit/oauth2-jwt": "^0.1.11",
         "@scalar/hono-api-reference": "^0.10.7",
         "hono": "^4.13.7",
@@ -62,7 +62,7 @@
       "dependencies": {
         "@hono/standard-validator": "^0.2.2",
         "@saurbit/hono-oauth2": "^0.1.10",
-        "@saurbit/oauth2": "^0.1.15",
+        "@saurbit/oauth2": "^0.1.16",
         "@saurbit/oauth2-jwt": "^0.1.11",
         "@scalar/hono-api-reference": "^0.10.7",
         "hono": "^4.13.7",
@@ -79,7 +79,7 @@
       "dependencies": {
         "@hono/standard-validator": "^0.2.2",
         "@saurbit/hono-oauth2": "^0.1.10",
-        "@saurbit/oauth2": "^0.1.15",
+        "@saurbit/oauth2": "^0.1.16",
         "@saurbit/oauth2-jwt": "^0.1.11",
         "@scalar/hono-api-reference": "^0.10.13",
         "hono": "^4.13.7",
@@ -123,7 +123,7 @@
 
     "@saurbit/hono-oauth2": ["@saurbit/hono-oauth2@0.1.10", "", { "peerDependencies": { "@saurbit/oauth2": "^0.1.15", "hono": "^4.13.7" } }, "sha512-u/Pm5NMpIIEGyfaaa7s5XCPyjXxemxDmSWzRgSrFcLoGKQvLCDi+KiYGvOREfutjw6VetEj1fWxpH3/Np/enMQ=="],
 
-    "@saurbit/oauth2": ["@saurbit/oauth2@0.1.15", "", {}, "sha512-13uQeQ9nr2fZynhsdsgQlq3Iqtp4EK6szDNYzx2RwHASK77ifAV0GBt5sPskJuH4vsETVVmMBX0upemOO55D+g=="],
+    "@saurbit/oauth2": ["@saurbit/oauth2@0.1.16", "", {}, "sha512-V0YpDNQUrX+pFMfAU+xD9UswnoZHnzO1EQRpgUGosJCO9PXhPSxa3d5g+AV5e1mNXGXWBgnGThOnRmEA5w5i9w=="],
 
     "@saurbit/oauth2-jwt": ["@saurbit/oauth2-jwt@0.1.11", "", { "dependencies": { "jose": "^6.2.12" }, "peerDependencies": { "@saurbit/oauth2": "^0.1.15" } }, "sha512-11lpLFCi4pw5I4kG3OInQQdyqGTczjECeLM7W8vIpFL0ZEZnbLka3U2/NeCILlUfUdmAGskEeb+ocM57M9bBxg=="],
 

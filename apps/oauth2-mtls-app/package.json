@@ -7,7 +7,7 @@
   },
   "dependencies": {
     "@saurbit/hono-oauth2": "^0.1.10",
-    "@saurbit/oauth2": "^0.1.15",
+    "@saurbit/oauth2": "^0.1.16",
     "@saurbit/oauth2-jwt": "^0.1.11",
     "hono": "^4.13.7"
   },

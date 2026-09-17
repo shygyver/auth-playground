@@ -143,8 +143,15 @@ export class TlsClientAuthMethod implements ClientAuthMethod {
     return this;
   }
 
-  createCertificateBoundTokenType(decodeTokenPayload: JwtDecode) {
-    return new MtlsCertificateBoundTokenType(decodeTokenPayload, this.#certHeaderName);
+  createCertificateBoundTokenType(
+    decodeTokenPayload: JwtDecode,
+    boundRefreshToken: boolean = false
+  ) {
+    return new MtlsCertificateBoundTokenType(
+      decodeTokenPayload,
+      boundRefreshToken,
+      this.#certHeaderName
+    );
   }
 
   /**

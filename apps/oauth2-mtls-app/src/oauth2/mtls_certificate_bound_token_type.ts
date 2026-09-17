@@ -35,9 +35,29 @@ export class MtlsCertificateBoundTokenType implements TokenType {
   constructor(
     // Callback to decode/verify your JWT token payload
     private readonly decodeTokenPayload: MtlsJwtDecode,
+    // Indicates whether the refresh token should be bound to the client certificate
+    private readonly boundRefreshToken: boolean = false,
     // Customize based on your reverse proxy configuration
     private readonly certHeaderName: string = "x-ssl-client-cert"
   ) {}
+
+  async isValidTokenRequest(
+    request: Request,
+    ctxt: { grantType?: string; refreshToken?: string }
+  ): Promise<CertificateBoundValidationResponse> {
+    // It should only validate the token request if refresh token binding is required
+    // and if grant type is refresh token.
+    if (this.boundRefreshToken) {
+      // TODO: Implement validation logic for refresh token binding
+      // return this.isValid(request, refreshToken);
+      if (ctxt.grantType === "refresh_token" && ctxt.refreshToken) {
+        // Implement your refresh token binding validation logic here
+        return this.isValid(request, ctxt.refreshToken);
+      }
+    }
+
+    return { isValid: true };
+  }
 
   /**
    * Validates the mTLS client certificate on an incoming protected resource request.
