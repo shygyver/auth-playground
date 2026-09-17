@@ -49,7 +49,7 @@ export class MtlsCertificateBoundTokenType implements TokenType {
     // and if grant type is refresh token.
     if (this.boundRefreshToken && ctxt.grantType === "refresh_token") {
       if (ctxt.refreshToken) {
-        // Implement your refresh token binding validation logic here
+        // Refresh token binding validation
         return this.isValid(request, ctxt.refreshToken);
       } else {
         return {
