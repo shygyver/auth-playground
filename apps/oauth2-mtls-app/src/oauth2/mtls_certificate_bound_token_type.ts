@@ -47,12 +47,15 @@ export class MtlsCertificateBoundTokenType implements TokenType {
   ): Promise<CertificateBoundValidationResponse> {
     // It should only validate the token request if refresh token binding is required
     // and if grant type is refresh token.
-    if (this.boundRefreshToken) {
-      // TODO: Implement validation logic for refresh token binding
-      // return this.isValid(request, refreshToken);
-      if (ctxt.grantType === "refresh_token" && ctxt.refreshToken) {
+    if (this.boundRefreshToken && ctxt.grantType === "refresh_token") {
+      if (ctxt.refreshToken) {
         // Implement your refresh token binding validation logic here
         return this.isValid(request, ctxt.refreshToken);
+      } else {
+        return {
+          isValid: false,
+          message: "Refresh token is missing.",
+        };
       }
     }
 
