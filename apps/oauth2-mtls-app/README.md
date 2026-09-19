@@ -223,3 +223,77 @@ ssl_verify_client optional_no_ca;
 ```
 
 This tells NGINX to **not** validate the certificates against a CA.
+
+---
+
+## Enforcing mTLS on Specific Endpoints
+
+To enforce mTLS strictly on /v3/token and all /api/ endpoints, while leaving /v3/authorize open for standard user login, you need to make two changes to your configuration:
+
+   1. Change the global ssl_verify_client to optional. This allows browsers to access /v3/authorize without throwing a 400 error.
+   2. Create specific location blocks for the protected paths and enforce strict certificate validation there using Nginx variables.
+
+updated nginx.conf:
+```conf
+events { 
+    worker_connections 1024; 
+}
+
+http {
+    server {
+        listen 443 ssl;
+        server_name localhost;
+
+        # Server credentials (so client trusts Nginx)
+        ssl_certificate     /etc/nginx/certs/server.crt;
+        ssl_certificate_key /etc/nginx/certs/server.key;
+
+        # Mutual TLS Configuration (Global Level)
+        ssl_client_certificate /etc/nginx/certs/ca.crt; 
+        
+        # CHANGED: Must be optional so /v3/authorize can be reached without a client cert
+        ssl_verify_client      optional;                 
+
+        # ----------------------------------------------------
+        # 1. Protected Paths: Token Endpoint & API Endpoints
+        # ----------------------------------------------------
+        location ~ ^/(v3/token|api/) {
+            proxy_pass http://oauth2-mtls-app:3000;
+
+            # CRITICAL: Strictly reject any request missing a valid client certificate
+            if ($ssl_client_verify != SUCCESS) {
+                return 401 "{\"error\": \"invalid_client\", \"error_description\": \"mTLS certificate verification failed or missing ($ssl_client_verify)\"}";
+            }
+
+            # Forward connection context & mTLS headers to Hono
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_set_header X-SSL-Client-Verify $ssl_client_verify; 
+            proxy_set_header X-SSL-Client-DN     $ssl_client_s_dn;   
+            proxy_set_header X-SSL-Client-Cert   $ssl_client_escaped_cert; 
+            proxy_set_header X-SSL-Client-SAN    ""; 
+            proxy_set_header X-SSL-Client-Expire $ssl_client_v_end; 
+        }
+
+        # ----------------------------------------------------
+        # 2. Public / Browser Paths: Authorize Endpoint
+        # ----------------------------------------------------
+        location / {
+            proxy_pass http://oauth2-mtls-app:3000;
+            
+            # Forward connection context (No mTLS enforcement here)
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+    }
+}
+```
+
+* ssl_verify_client optional;: Nginx will still request a certificate during the TLS handshake, but if the client (like a browser hitting /v3/authorize) doesn't present one, it will seamlessly fall back to a standard TLS connection instead of killing the request with a 400 Bad Request.
+* location ~ ^/(v3/token|api/): This uses a regular expression to capture the token endpoint and any path starting with /api/.
+* Strict Conditional Block: Inside that specific location block, if ($ssl_client_verify != SUCCESS) ensures that if the handshake didn't result in a SUCCESSFUL certificate validation, Nginx instantly blocks the connection with a 401 Unauthorized before it ever reaches the backend.
+

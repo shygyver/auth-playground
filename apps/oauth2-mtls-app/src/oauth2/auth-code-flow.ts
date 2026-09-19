@@ -474,7 +474,7 @@ export const authCodeFlow = new HonoAuthorizationCodeFlowBuilder({
         !payload ||
         typeof payload.scope !== "string" ||
         !payload.sub ||
-        payload.aud !== "string"
+        typeof payload.aud !== "string"
       ) {
         return { isValid: false, message: "Malformed or missing token payload context." };
       }
